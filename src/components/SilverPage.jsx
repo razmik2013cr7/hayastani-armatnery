@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
+import NavTabs from './NavTabs.jsx'
 import { translations } from '../i18n.js'
 import mainLogo from '../assets/main-logo.jpeg'
 import ticketLogo from '../assets/ticket-logo.jpeg'
@@ -126,6 +127,7 @@ export default function SilverPage({ onBack }) {
             ))}
           </div>
         </div>
+        <NavTabs t={t} />
       </header>
 
       {authOpen && <AuthModal t={t} onClose={() => setAuthOpen(false)} />}

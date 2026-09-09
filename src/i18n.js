@@ -8,9 +8,13 @@ export const translations = {
   hy: {
     nav: {
       all: 'Բոլորը',
-      one: '1 օր',
-      two: '2 օր',
       three: '3 օր',
+      five: '5 օր',
+      seven: '7 օր',
+    },
+    tabs: {
+      main: 'Գլխավոր',
+      shop: 'Խանութ',
     },
     card: {
       details: 'Տեսնել ավելին',
@@ -20,32 +24,32 @@ export const translations = {
       gyumri: {
         title: 'Գյումրի — քաղաքի ոգին',
         description:
-          'Մեկօրյա ճամփորդություն դեպի Հայաստանի մշակութային մայրաքաղաքը։ Կտեսնենք Սև և Սպիտակ ամրոցները, կծաղրապատճենենք Քուչակի փողոցի երգիծական ոգին և կհամտեսենք Գյումրվա խորովածը։',
-        duration: '1 օր',
+          'Եռօրյա ճամփորդություն դեպի Հայաստանի մշակութային մայրաքաղաքը։ Կտեսնենք Սև և Սպիտակ ամրոցները, կծաղրապատճենենք Քուչակի փողոցի երգիծական ոգին և կհամտեսենք Գյումրվա խորովածը։',
+        duration: '3 օր',
       },
       dilijan: {
         title: 'Դիլիջան — «Հայկական Շվեյցարիա»',
         description:
           'Անտառներով շրջապատված հմայիչ քաղաք։ Կայցելենք Հաղարծին և Գոշավանք վանքերին, կզբոսնենք Դիլիջանի ազգային պարկում և կգնենք ձեռագործ հուշանվերներ հին փողոցից։',
-        duration: '1 օր',
+        duration: '3 օր',
       },
       goris: {
         title: 'Գորիս և Խնձորեսկ',
         description:
-          'Երկօրյա ճամփորդություն դեպի Սյունիք։ Կտեսնենք Խնձորեսկի քարանձավային հին բնակավայրը, Թաթևի վանքը և աշխարհի ամենաերկար հեռարձակման հովանոցային ճոպանուղին՝ «Ուինգս օֆ Թաթևը»։',
-        duration: '2 օր',
+          'Հնգօրյա ճամփորդություն դեպի Սյունիք։ Կտեսնենք Խնձորեսկի քարանձավային հին բնակավայրը, Թաթևի վանքը և աշխարհի ամենաերկար հեռարձակման հովանոցային ճոպանուղին՝ «Ուինգս օֆ Թաթևը»։',
+        duration: '5 օր',
       },
       sevan: {
         title: 'Սևանա լիճ',
         description:
-          'Մեկօրյա հանգստային տուր դեպի Հայաստանի մարգարիտը՝ Սևանա լիճ։ Կայցելենք Սևանավանքին, լողալ կամ զբոսնել ափին և համտեսել թարմ իշխան։',
-        duration: '1 օր',
+          'Եռօրյա հանգստային տուր դեպի Հայաստանի մարգարիտը՝ Սևանա լիճ։ Կայցելենք Սևանավանքին, լողալ կամ զբոսնել ափին և համտեսել թարմ իշխան։',
+        duration: '3 օր',
       },
       syuniq: {
         title: 'Սյունիք — Արարատից մինչև Մեղրի',
         description:
-          'Երեքօրյա էքսկուրսիա Հայաստանի հարավով։ Կտեսնենք Արենու գինետները, Նորավանքի ու Ամաղու Նորավանքի համալիրները, Մեղրիի ամրոցը և կվայելենք Արաքսի ձորի համայնապատկերները։',
-        duration: '3 օր',
+          'Յոթօրյա էքսկուրսիա Հայաստանի հարավով։ Կտեսնենք Արենու գինետները, Նորավանքի ու Ամաղու Նորավանքի համալիրները, Մեղրիի ամրոցը և կվայելենք Արաքսի ձորի համայնապատկերները։',
+        duration: '7 օր',
       },
     },
     modal: {
@@ -155,9 +159,13 @@ export const translations = {
   en: {
     nav: {
       all: 'All',
-      one: '1 day',
-      two: '2 days',
       three: '3 days',
+      five: '5 days',
+      seven: '7 days',
+    },
+    tabs: {
+      main: 'Main',
+      shop: 'Shop',
     },
     card: {
       details: 'View details',
@@ -167,32 +175,32 @@ export const translations = {
       gyumri: {
         title: 'Gyumri — Spirit of the City',
         description:
-          'A one-day journey to Armenia\'s cultural capital. See the Black and White fortresses, stroll the ironic charm of Kuchak Street and taste authentic Gyumri barbecue.',
-        duration: '1 day',
+          'A three-day journey to Armenia\'s cultural capital. See the Black and White fortresses, stroll the ironic charm of Kuchak Street and taste authentic Gyumri barbecue.',
+        duration: '3 days',
       },
       dilijan: {
         title: 'Dilijan — "Armenian Switzerland"',
         description:
           'A charming town surrounded by forests. Visit Haghartsin and Goshavank monasteries, hike in Dilijan National Park and buy handmade souvenirs on the old street.',
-        duration: '1 day',
+        duration: '3 days',
       },
       goris: {
         title: 'Goris & Khndzoresk',
         description:
-          'A two-day trip to Syunik. Explore the ancient cave village of Khndzoresk, Tatev Monastery and the "Wings of Tatev" — the world\'s longest reversible cableway.',
-        duration: '2 days',
+          'A five-day trip to Syunik. Explore the ancient cave village of Khndzoresk, Tatev Monastery and the "Wings of Tatev" — the world\'s longest reversible cableway.',
+        duration: '5 days',
       },
       sevan: {
         title: 'Lake Sevan',
         description:
-          'A relaxing one-day tour to the pearl of Armenia — Lake Sevan. Visit Sevanavank Monastery, swim or walk along the shore and taste fresh trout (ishkhan).',
-        duration: '1 day',
+          'A relaxing three-day tour to the pearl of Armenia — Lake Sevan. Visit Sevanavank Monastery, swim or walk along the shore and taste fresh trout (ishkhan).',
+        duration: '3 days',
       },
       syuniq: {
         title: 'Syunik — From Ararat to Meghri',
         description:
-          'A three-day excursion across southern Armenia. Visit Areni wineries, Noravank and Amaghu complexes, Meghri fortress and enjoy panoramas of the Arax valley.',
-        duration: '3 days',
+          'A seven-day excursion across southern Armenia. Visit Areni wineries, Noravank and Amaghu complexes, Meghri fortress and enjoy panoramas of the Arax valley.',
+        duration: '7 days',
       },
     },
     modal: {
@@ -302,9 +310,13 @@ export const translations = {
   ru: {
     nav: {
       all: 'Все',
-      one: '1 день',
-      two: '2 дня',
       three: '3 дня',
+      five: '5 дней',
+      seven: '7 дней',
+    },
+    tabs: {
+      main: 'Главная',
+      shop: 'Магазин',
     },
     card: {
       details: 'Подробнее',
@@ -314,32 +326,32 @@ export const translations = {
       gyumri: {
         title: 'Гюмри — дух города',
         description:
-          'Однодневное путешествие в культурную столицу Армении. Увидим Чёрную и Белую крепости, погуляем по ироничному духу улицы Кучака и попробуем настоящий гюмрийский шашлык.',
-        duration: '1 день',
+          'Трёхдневное путешествие в культурную столицу Армении. Увидим Чёрную и Белую крепости, погуляем по ироничному духу улицы Кучака и попробуем настоящий гюмрийский шашлык.',
+        duration: '3 дня',
       },
       dilijan: {
         title: 'Дилижан — «Армянская Швейцария»',
         description:
           'Очаровательный город среди лесов. Посетим монастыри Агарцин и Гошаванк, прогуляемся по Дилижанскому национальному парку и купим сувениры ручной работы на старой улице.',
-        duration: '1 день',
+        duration: '3 дня',
       },
       goris: {
         title: 'Горис и Хндзореск',
         description:
-          'Двухдневная поездка в Сюник. Исследуем древний пещерный посёлок Хндзореск, монастырь Татев и «Крылья Татева» — самую длинную в мире канатную дорогу.',
-        duration: '2 дня',
+          'Пятидневная поездка в Сюник. Исследуем древний пещерный посёлок Хндзореск, монастырь Татев и «Крылья Татева» — самую длинную в мире канатную дорогу.',
+        duration: '5 дней',
       },
       sevan: {
         title: 'Озеро Севан',
         description:
-          'Однодневный тур отдыха к жемчужине Армении — озеру Севан. Посетим монастырь Севанаванк, искупаемся или прогуляемся по берегу и попробуем свежую форель (ишхан).',
-        duration: '1 день',
+          'Трёхдневный тур отдыха к жемчужине Армении — озеру Севан. Посетим монастырь Севанаванк, искупаемся или прогуляемся по берегу и попробуем свежую форель (ишхан).',
+        duration: '3 дня',
       },
       syuniq: {
         title: 'Сюник — от Арарата до Мегри',
         description:
-          'Трёхдневная экскурсия по югу Армении. Посетим винодельни Арени, комплексы Нораванк и Амагу, крепость Мегри и полюбуемся панорамами долины Аракса.',
-        duration: '3 дня',
+          'Семидневная экскурсия по югу Армении. Посетим винодельни Арени, комплексы Нораванк и Амагу, крепость Мегри и полюбуемся панорамами долины Аракса.',
+        duration: '7 дней',
       },
     },
     modal: {

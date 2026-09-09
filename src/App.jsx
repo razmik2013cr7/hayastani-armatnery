@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import QRCode from 'qrcode'
 import Header from './components/Header.jsx'
+import NavTabs from './components/NavTabs.jsx'
 import TourNav from './components/TourNav.jsx'
 import TourGrid from './components/TourGrid.jsx'
 import TourModal from './components/TourModal.jsx'
@@ -81,6 +82,7 @@ export default function App() {
   return (
     <AuthProvider>
       <Header lang={lang} onLangChange={setLang} t={t} />
+      <NavTabs t={t} />
       <TourNav active={category} onChange={setCategory} t={t} />
 
       <section className="hero">

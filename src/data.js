@@ -14,18 +14,18 @@ export const SITE_URL = 'https://hayastani-armatnery.vercel.app'
 
 export const CATEGORIES = [
   { id: 'all', labelKey: 'nav.all', days: null },
-  { id: '1', labelKey: 'nav.one', days: 1 },
-  { id: '2', labelKey: 'nav.two', days: 2 },
   { id: '3', labelKey: 'nav.three', days: 3 },
+  { id: '5', labelKey: 'nav.five', days: 5 },
+  { id: '7', labelKey: 'nav.seven', days: 7 },
 ]
 
 // Prices are for the whole tour (per booking, in AMD).
 export const TOURS = [
-  { id: 'gyumri', image: '/tour-gyumri.svg', price: 15000, days: 1 },
-  { id: 'dilijan', image: '/tour-dilijan.svg', price: 12000, days: 1 },
-  { id: 'goris', image: '/tour-goris.svg', price: 18000, days: 2 },
-  { id: 'sevan', image: '/tour-sevan.svg', price: 9000, days: 1 },
-  { id: 'syuniq', image: '/tour-syuniq.svg', price: 22000, days: 3 },
+  { id: 'gyumri', image: '/tour-gyumri.svg', price: 15000, days: 3 },
+  { id: 'dilijan', image: '/tour-dilijan.svg', price: 12000, days: 3 },
+  { id: 'goris', image: '/tour-goris.svg', price: 18000, days: 5 },
+  { id: 'sevan', image: '/tour-sevan.svg', price: 9000, days: 3 },
+  { id: 'syuniq', image: '/tour-syuniq.svg', price: 22000, days: 7 },
 ]
 
 // Step-1 add-ons — each shows its price next to the Yes/No toggle.

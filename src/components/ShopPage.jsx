@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { SHOP_ITEMS } from '../data.js'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
+import NavTabs from './NavTabs.jsx'
 import { translations } from '../i18n.js'
 import mainLogo from '../assets/main-logo.jpeg'
 
@@ -97,6 +98,7 @@ export default function ShopPage({ onBack }) {
             ))}
           </div>
         </div>
+        <NavTabs t={t} />
       </header>
 
       {authOpen && <AuthModal t={t} onClose={() => setAuthOpen(false)} />}
