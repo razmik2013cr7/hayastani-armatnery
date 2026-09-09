@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { SHOP_ITEMS } from '../data.js'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
+import { getGuestCoins, setGuestCoins, usePinUnlocked } from '../pinAccess.js'
 import NavTabs from './NavTabs.jsx'
 import { translations } from '../i18n.js'
 import mainLogo from '../assets/main-logo.jpeg'
@@ -17,6 +18,7 @@ function fmt(n) {
 
 export default function ShopPage({ onBack }) {
   const { user, supabase } = useAuth()
+  const pinUnlocked = usePinUnlocked()
   const [authOpen, setAuthOpen] = useState(false)
   const [lang, setLang] = useState(readLang)
   const [balance, setBalance] = useState(null) // null = loading
@@ -35,21 +37,25 @@ export default function ShopPage({ onBack }) {
   }
 
   const loadBalance = useCallback(async () => {
-    if (!user) return setBalance(0)
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('silver_coins')
-      .eq('id', user.id)
-      .single()
-    setBalance(error ? 0 : (data?.silver_coins ?? 0))
-  }, [user, supabase])
+    if (user) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('silver_coins')
+        .eq('id', user.id)
+        .single()
+      setBalance(error ? 0 : (data?.silver_coins ?? 0))
+      return
+    }
+    // PIN-unlocked guests keep their coins on this device.
+    setBalance(pinUnlocked ? getGuestCoins() : 0)
+  }, [user, supabase, pinUnlocked])
 
   useEffect(() => {
     loadBalance()
   }, [loadBalance])
 
   const buy = async (item) => {
-    if (!user) {
+    if (!user && !pinUnlocked) {
       setAuthOpen(true)
       return
     }
@@ -59,12 +65,18 @@ export default function ShopPage({ onBack }) {
       return
     }
     setBusyId(item.id)
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({ id: user.id, email: user.email, silver_coins: balance - item.price })
-    if (error) {
-      notify('err', t.shop.buyFailed)
+    if (user) {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({ id: user.id, email: user.email, silver_coins: balance - item.price })
+      if (error) {
+        notify('err', t.shop.buyFailed)
+      } else {
+        setBalance(balance - item.price)
+        notify('ok', `✅ ${t.shop.items[item.id]} — ${t.shop.bought}`)
+      }
     } else {
+      setGuestCoins(balance - item.price)
       setBalance(balance - item.price)
       notify('ok', `✅ ${t.shop.items[item.id]} — ${t.shop.bought}`)
     }
@@ -122,7 +134,8 @@ export default function ShopPage({ onBack }) {
 
         <div className="shop-grid">
           {SHOP_ITEMS.map((item) => {
-            const affordable = user && balance !== null && balance >= item.price
+            const canBuy = user || pinUnlocked
+            const affordable = canBuy && balance !== null && balance >= item.price
             return (
               <div key={item.id} className="shop-card">
                 <img className="shop-item-img" src={item.image} alt={t.shop.items[item.id]} loading="lazy" />
@@ -132,10 +145,10 @@ export default function ShopPage({ onBack }) {
                   <button
                     type="button"
                     className={`btn ${affordable ? 'btn-primary' : 'btn-ghost'}`}
-                    disabled={busyId === item.id || (user && balance !== null && !affordable)}
+                    disabled={busyId === item.id || (canBuy && balance !== null && !affordable)}
                     onClick={() => buy(item)}
                   >
-                    {user
+                    {canBuy
                       ? affordable
                         ? t.shop.buy
                         : t.shop.needMore

@@ -67,3 +67,70 @@ npm notice run vite
       at JSXParserMixin.parseMaybeConditional (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10902:23)
       at JSXParserMixin.parseMaybeAssign (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10852:21)
       at C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10821:39
+[2m10:21:57 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\Users\Razmik\Desktop\Rafik\src\components\AuthModal.jsx: Missing semicolon. (47:15)
+
+[0m [90m 45 |[31m         email[33m,[31m
+ [90m 46 |[31m         password[33m,[31m
+[31m[1m>[22m[31m[90m 47 |[31m         options[33m:[31m { data[33m:[31m { full_name[33m:[31m fullName } }[33m,[31m
+ [90m    |[31m                [31m[1m^[22m[31m
+ [90m 48 |[31m       })
+ [90m 49 |[31m       [36mif[31m (error) {
+ [90m 50 |[31m         setError(error[33m.[31mmessage)[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/Users/Razmik/Desktop/Rafik/src/components/AuthModal.jsx[39m:47:15
+[33m  45 |          email,
+  46 |          password,
+  47 |          options: { data: { full_name: fullName } },
+     |                 ^
+  48 |        })
+  49 |        if (error) {[39m
+      at constructor (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.semicolon (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:6916:10)
+      at JSXParserMixin.parseExpressionStatement (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13314:10)
+      at JSXParserMixin.parseStatementContent (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12928:19)
+      at JSXParserMixin.parseStatementLike (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseStatementContent (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12887:21)
+      at JSXParserMixin.parseStatementLike (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementOrSloppyAnnexBFunctionDeclaration (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12786:17)
+      at JSXParserMixin.parseIfStatement (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13159:28)
+      at JSXParserMixin.parseStatementContent (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12825:21)
+      at JSXParserMixin.parseStatementLike (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseArrowExpression (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12104:10)
+      at JSXParserMixin.parseAsyncArrowFromCallExpression (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11290:10)
+      at JSXParserMixin.parseCoverCallAndAsyncArrowHead (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11220:27)
+      at JSXParserMixin.parseSubscript (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11141:19)
+      at JSXParserMixin.parseSubscripts (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11115:19)
+      at JSXParserMixin.parseExprSubscripts (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11106:17)
+      at JSXParserMixin.parseUpdate (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOps (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10925:23)
+      at JSXParserMixin.parseMaybeConditional (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseExportDefaultExpression (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13936:19)

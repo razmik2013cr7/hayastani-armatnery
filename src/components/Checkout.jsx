@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { BUS_SEAT_ROWS, CATEGORIES, EXTRAS, PAYMENT_METHODS, STAFF_PIN, TOUR_TYPES, TAKEN_SEATS, tourPriceForDays } from '../data.js'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
+import { usePinUnlocked } from '../pinAccess.js'
 import ticketLogo from '../assets/ticket-logo.jpeg'
 
 const fmt = new Intl.NumberFormat('hy-AM')
@@ -472,6 +473,7 @@ function Success({ tour, days, options, seat, card, method, tourType, total, onC
 
 export default function Checkout({ tour, categoryDays = null, onClose, t }) {
   const { user, supabase } = useAuth()
+  const pinUnlocked = usePinUnlocked()
   const [authOpen, setAuthOpen] = useState(false)
   const [step, setStep] = useState(1)
   const [options, setOptions] = useState({ photoshoot: false, food: false, cottage: false })
@@ -494,8 +496,8 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
 
   const steps = [t.checkout.step1, t.checkout.step2, t.checkout.step3]
 
-  // Buying requires an account — no steps are reachable while signed out.
-  if (!user) {
+  // Buying requires an account or the staff PIN — no steps are reachable otherwise.
+  if (!user && !pinUnlocked) {
     return (
       <div className="checkout-overlay" onClick={onClose}>
         <div className="checkout" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>

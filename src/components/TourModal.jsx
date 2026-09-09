@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
+import { usePinUnlocked } from '../pinAccess.js'
 
 const fmt = new Intl.NumberFormat('hy-AM')
 
 export default function TourModal({ tour, onClose, onBuy, t }) {
   const { user } = useAuth()
+  const pinUnlocked = usePinUnlocked()
   const [authOpen, setAuthOpen] = useState(false)
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
@@ -52,9 +54,9 @@ export default function TourModal({ tour, onClose, onBuy, t }) {
             <button
               type="button"
               className="btn btn-primary"
-              onClick={() => (user ? onBuy() : setAuthOpen(true))}
+              onClick={() => (user || pinUnlocked ? onBuy() : setAuthOpen(true))}
             >
-              🎫 {user ? t.modal.buy : t.modal.signInToBuy}
+              🎫 {user || pinUnlocked ? t.modal.buy : t.modal.signInToBuy}
             </button>
           </div>
         </div>

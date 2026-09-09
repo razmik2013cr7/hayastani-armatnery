@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../AuthContext.jsx'
+import { STAFF_PIN } from '../data.js'
+import { unlockPin } from '../pinAccess.js'
 
 export default function AuthModal({ onClose, t }) {
   const { supabase } = useAuth()
-  const [mode, setMode] = useState('login')
+  const [mode, setMode] = useState('login') // 'login' | 'signup' | 'pin'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
+  const [pin, setPin] = useState('')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
@@ -24,6 +27,17 @@ export default function AuthModal({ onClose, t }) {
   const submit = async (e) => {
     e.preventDefault()
     setError('')
+
+    if (mode === 'pin') {
+      if (pin !== STAFF_PIN) {
+        setError(t.checkout.pinWrong)
+        return
+      }
+      unlockPin()
+      onClose()
+      return
+    }
+
     setNotice('')
     setBusy(true)
 
@@ -65,29 +79,48 @@ export default function AuthModal({ onClose, t }) {
           </svg>
         </button>
         <div className="modal-body">
-          <h2>{mode === 'login' ? t.auth.signIn : t.auth.signUp}</h2>
+          <h2>{mode === 'login' ? t.auth.signIn : mode === 'pin' ? t.auth.pinTitle : t.auth.signUp}</h2>
 
           {notice && <p className="auth-notice">{notice}</p>}
           {error && <p className="auth-error">{error}</p>}
 
           <form onSubmit={submit} className="pay-grid">
-            {mode === 'signup' && (
+            {mode === 'pin' ? (
               <div className="field">
-                <label htmlFor="auth-name">{t.auth.fullName}</label>
-                <input id="auth-name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                <label htmlFor="auth-pin">{t.auth.pinLabel}</label>
+                <input
+                  id="auth-pin"
+                  className="pin-input"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  maxLength={8}
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                  required
+                />
+                <div className="t-sub">{t.auth.pinHint}</div>
               </div>
+            ) : (
+              <>
+                {mode === 'signup' && (
+                  <div className="field">
+                    <label htmlFor="auth-name">{t.auth.fullName}</label>
+                    <input id="auth-name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                  </div>
+                )}
+                <div className="field">
+                  <label htmlFor="auth-email">{t.auth.email}</label>
+                  <input id="auth-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </div>
+                <div className="field">
+                  <label htmlFor="auth-pass">{t.auth.password}</label>
+                  <input id="auth-pass" type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />
+                </div>
+              </>
             )}
-            <div className="field">
-              <label htmlFor="auth-email">{t.auth.email}</label>
-              <input id="auth-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            </div>
-            <div className="field">
-              <label htmlFor="auth-pass">{t.auth.password}</label>
-              <input id="auth-pass" type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />
-            </div>
 
             <button type="submit" className="btn btn-primary" disabled={busy}>
-              {mode === 'login' ? t.auth.loginBtn : t.auth.createAccount}
+              {mode === 'login' ? t.auth.loginBtn : mode === 'pin' ? t.checkout.pinSubmit : t.auth.createAccount}
             </button>
           </form>
 
@@ -95,12 +128,12 @@ export default function AuthModal({ onClose, t }) {
             type="button"
             className="auth-switch"
             onClick={() => {
-              setMode(mode === 'login' ? 'signup' : 'login')
+              setMode(mode === 'login' ? 'pin' : 'login')
               setError('')
               setNotice('')
             }}
           >
-            {mode === 'login' ? t.auth.needAccount : t.auth.haveAccount}
+            {mode === 'login' ? t.auth.usePinInstead : t.auth.haveAccount}
           </button>
         </div>
       </div>
