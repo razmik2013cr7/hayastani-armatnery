@@ -1439,6 +1439,27 @@ body {
   padding: 26px 10px 10px;
 }
 
+.silver-gate {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 30px 26px;
+  margin-top: 20px;
+}
+
+.gate-reward {
+  display: inline-block;
+  margin: 12px 0 4px;
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: var(--red-dark);
+  background: rgba(216, 167, 67, 0.15);
+  border: 1px solid rgba(216, 167, 67, 0.45);
+  border-radius: 999px;
+  padding: 6px 18px;
+}
+
 .gate-icon {
   font-size: 2.2rem;
   margin-bottom: 8px;

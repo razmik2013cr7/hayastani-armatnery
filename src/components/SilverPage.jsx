@@ -133,44 +133,51 @@ export default function SilverPage({ onBack }) {
       {authOpen && <AuthModal t={t} onClose={() => setAuthOpen(false)} />}
 
       <main style={{ flex: 1, maxWidth: 560, margin: '0 auto', padding: '40px 20px', width: '100%' }}>
-        <h1 style={{ marginTop: 0 }}>🪙 {t.silver.title}</h1>
-
-        <div className="silver-balance-card">
-          <div className="silver-balance-label">{t.silver.balance}</div>
-          <div className="silver-balance-num">
-            {balance === null ? '…' : `${fmt(balance)} 🪙`}
+        {!user ? (
+          // Login wall: scanning the QR signed-out shows nothing but this —
+          // coins are credited automatically right after signing in.
+          <div className="gate-box silver-gate">
+            <div className="gate-icon" aria-hidden="true">🔐</div>
+            <h2>{t.silver.needLogin}</h2>
+            <p className="t-sub">{t.silver.needLoginHint}</p>
+            <div className="gate-reward" aria-hidden="true">+200 🪙</div>
+            <button type="button" className="btn btn-primary" onClick={() => setAuthOpen(true)}>
+              👤 {t.silver.signIn}
+            </button>
           </div>
-          <div className="t-sub">{t.silver.subtitle}</div>
-        </div>
-
-        {message && (
-          <div className={`silver-msg ${message.kind}`}>
-            {message.kind === 'ok' ? '✅ ' : '⚠️ '}
-            {message.text}
-          </div>
-        )}
-
-        {user ? (
-          balance > 0 && (
-            <div className="silver-remove-box">
-              <div className="dep-label">{t.silver.removeTitle}</div>
-              <p className="t-sub" style={{ marginTop: 6 }}>{t.silver.removeHint}</p>
-              <button type="button" className="btn btn-ghost silver-remove-btn" onClick={removeCoins} disabled={busy}>
-                🗑 {t.silver.removeBtn}
-              </button>
-            </div>
-          )
         ) : (
-          <div className="silver-remove-box">
-            <div className="dep-label">{t.silver.needLogin}</div>
-            <p className="t-sub" style={{ marginTop: 6 }}>{t.silver.needLoginHint}</p>
-          </div>
-        )}
+          <>
+            <h1 style={{ marginTop: 0 }}>🪙 {t.silver.title}</h1>
 
-        {user && (
-          <button type="button" className="btn btn-ghost" style={{ marginTop: 16 }} onClick={signOut}>
-            {t.silver.signOut}
-          </button>
+            <div className="silver-balance-card">
+              <div className="silver-balance-label">{t.silver.balance}</div>
+              <div className="silver-balance-num">
+                {balance === null ? '…' : `${fmt(balance)} 🪙`}
+              </div>
+              <div className="t-sub">{t.silver.subtitle}</div>
+            </div>
+
+            {message && (
+              <div className={`silver-msg ${message.kind}`}>
+                {message.kind === 'ok' ? '✅ ' : '⚠️ '}
+                {message.text}
+              </div>
+            )}
+
+            {balance > 0 && (
+              <div className="silver-remove-box">
+                <div className="dep-label">{t.silver.removeTitle}</div>
+                <p className="t-sub" style={{ marginTop: 6 }}>{t.silver.removeHint}</p>
+                <button type="button" className="btn btn-ghost silver-remove-btn" onClick={removeCoins} disabled={busy}>
+                  🗑 {t.silver.removeBtn}
+                </button>
+              </div>
+            )}
+
+            <button type="button" className="btn btn-ghost" style={{ marginTop: 16 }} onClick={signOut}>
+              {t.silver.signOut}
+            </button>
+          </>
         )}
       </main>
 
