@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useAuth } from '../AuthContext.jsx'
-import AuthModal from './AuthModal.jsx'
+import { useEffect, useRef, useState } from 'react'
 import NavTabs from './NavTabs.jsx'
-import { getGuestCoins, lockPin, setGuestCoins, unlockPin, usePinUnlocked } from '../pinAccess.js'
+import { getGuestCoins, setGuestCoins } from '../pinAccess.js'
 import { REWARD_PIN } from '../data.js'
 import { translations } from '../i18n.js'
 import mainLogo from '../assets/main-logo.jpeg'
@@ -20,15 +18,15 @@ function fmt(n) {
 }
 
 export default function SilverPage({ onBack }) {
-  const { user, supabase } = useAuth()
-  const pinUnlocked = usePinUnlocked('rewards')
-  const [authOpen, setAuthOpen] = useState(false)
-  const [gatePin, setGatePin] = useState('')
-  const [gateError, setGateError] = useState(false)
   const [lang, setLang] = useState(readLang)
-  const [balance, setBalance] = useState(null) // null = loading
+  // In-memory only: the 2011 PIN is required again on every visit.
+  const [unlocked, setUnlocked] = useState(false)
+  // Coins live on the device that scanned the QR — never in an account.
+  const [balance, setBalance] = useState(() => getGuestCoins())
   const [message, setMessage] = useState(null) // { kind: 'ok' | 'err', text }
   const [busy, setBusy] = useState(false)
+  const [gatePin, setGatePin] = useState('')
+  const [gateError, setGateError] = useState(false)
   const claimLock = useRef(false)
 
   useEffect(() => {
@@ -42,97 +40,36 @@ export default function SilverPage({ onBack }) {
     setTimeout(() => setMessage(null), 4000)
   }
 
-  const loadBalance = useCallback(async () => {
-    if (user) {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('silver_coins')
-        .eq('id', user.id)
-        .single()
-      if (error) {
-        setBalance(0)
-        return
-      }
-      setBalance(data?.silver_coins ?? 0)
-      return
-    }
-    // PIN-unlocked guests keep their coins on this device.
-    setBalance(pinUnlocked ? getGuestCoins() : 0)
-  }, [user, supabase, pinUnlocked])
-
+  // Claim the reward once per unlocked visit — device-local wallet only.
   useEffect(() => {
-    loadBalance()
-  }, [loadBalance])
+    if (!unlocked || claimLock.current) return
+    claimLock.current = true
+    const next = getGuestCoins() + COIN_REWARD
+    setGuestCoins(next)
+    setBalance(next)
+    notify('ok', `+${fmt(COIN_REWARD)} 🪙 ${t.silver.claimed}`)
+  }, [unlocked, t])
 
-  // Claim the QR reward exactly once per visit — account or PIN-unlocked guest.
-  // Account claims use upsert so they also work when the profile row doesn't exist yet.
-  useEffect(() => {
-    if (claimLock.current) return
-    if (user) {
-      claimLock.current = true
-      ;(async () => {
-        const { data: prof } = await supabase
-          .from('profiles')
-          .select('silver_coins')
-          .eq('id', user.id)
-          .single()
-        const next = (prof?.silver_coins ?? 0) + COIN_REWARD
-        const { error } = await supabase
-          .from('profiles')
-          .upsert({ id: user.id, email: user.email, silver_coins: next })
-        if (error) {
-          notify('err', t.silver.claimFailed)
-        } else {
-          setBalance(next)
-          notify('ok', `+${fmt(COIN_REWARD)} 🪙 ${t.silver.claimed}`)
-        }
-      })()
-      return
-    }
-    if (pinUnlocked) {
-      claimLock.current = true
-      const next = getGuestCoins() + COIN_REWARD
-      setGuestCoins(next)
-      setBalance(next)
-      notify('ok', `+${fmt(COIN_REWARD)} 🪙 ${t.silver.claimed}`)
-    }
-  }, [user, pinUnlocked, supabase, t])
-
-  const removeCoins = async () => {
+  const removeCoins = () => {
     if (busy || !balance) return
     setBusy(true)
-    if (user) {
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({ id: user.id, email: user.email, silver_coins: 0 })
-      if (error) {
-        notify('err', t.silver.removeFailed)
-        setBusy(false)
-        return
-      }
-    } else {
-      setGuestCoins(0)
-    }
+    setGuestCoins(0)
     setBalance(0)
     notify('ok', t.silver.removed)
     setBusy(false)
   }
 
-  const signOut = async () => {
-    if (user) {
-      await supabase.auth.signOut()
-    } else {
-      lockPin('rewards')
-    }
-    setBalance(0)
+  const lockNow = () => {
+    setUnlocked(false)
+    claimLock.current = false
+    setBalance(getGuestCoins())
   }
 
-  // The QR page asks for the rewards PIN (2011) instead of an account.
   const tryGatePin = () => {
     if (gatePin.trim().toUpperCase() === REWARD_PIN) {
       setGateError(false)
       setGatePin('')
-      unlockPin('rewards')
+      setUnlocked(true)
     } else {
       setGateError(true)
     }
@@ -147,11 +84,6 @@ export default function SilverPage({ onBack }) {
             <span className="logo-text">Հայաստանի Արմատները</span>
           </button>
           <div className="header-spacer" />
-          {!user && (
-            <button type="button" className="btn btn-ghost account-login" onClick={() => setAuthOpen(true)}>
-              👤 {t.silver.signIn}
-            </button>
-          )}
           <div className="lang-switch" role="group" aria-label="Language">
             {['hy', 'en', 'ru'].map((code) => (
               <button
@@ -168,21 +100,15 @@ export default function SilverPage({ onBack }) {
         <NavTabs t={t} />
       </header>
 
-      {authOpen && <AuthModal t={t} onClose={() => setAuthOpen(false)} />}
-
       <main style={{ flex: 1, maxWidth: 560, margin: '0 auto', padding: '40px 20px', width: '100%' }}>
-        {!user && !pinUnlocked ? (
-          // Login wall: scanning the QR signed-out shows nothing but this —
-          // coins are credited automatically right after signing in or
-          // unlocking with the staff PIN.
+        {!unlocked ? (
+          // Gate: the 2011 PIN is required every time this page is opened —
+          // coins are credited to the device, no account involved.
           <div className="gate-box silver-gate">
             <div className="gate-icon" aria-hidden="true">🔐</div>
-            <h2>{t.silver.needLogin}</h2>
-            <p className="t-sub">{t.silver.needLoginHint}</p>
+            <h2>{t.silver.pinGateTitle}</h2>
+            <p className="t-sub">{t.silver.pinGateHint}</p>
             <div className="gate-reward" aria-hidden="true">+{COIN_REWARD} 🪙</div>
-            <button type="button" className="btn btn-primary" onClick={() => setAuthOpen(true)}>
-              👤 {t.silver.signIn}
-            </button>
             <div className="gate-pin-row">
               <input
                 className="pin-input"
@@ -208,9 +134,7 @@ export default function SilverPage({ onBack }) {
 
             <div className="silver-balance-card">
               <div className="silver-balance-label">{t.silver.balance}</div>
-              <div className="silver-balance-num">
-                {balance === null ? '…' : `${fmt(balance)} 🪙`}
-              </div>
+              <div className="silver-balance-num">{fmt(balance)} 🪙</div>
               <div className="t-sub">{t.silver.subtitle}</div>
             </div>
 
@@ -231,11 +155,9 @@ export default function SilverPage({ onBack }) {
               </div>
             )}
 
-            {(user || pinUnlocked) && (
-              <button type="button" className="btn btn-ghost" style={{ marginTop: 16 }} onClick={signOut}>
-                {user ? t.silver.signOut : t.silver.lockPin}
-              </button>
-            )}
+            <button type="button" className="btn btn-ghost" style={{ marginTop: 16 }} onClick={lockNow}>
+              {t.silver.lockPin}
+            </button>
           </>
         )}
       </main>
