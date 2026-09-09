@@ -8,7 +8,9 @@ import shopWinterHat from './assets/shop-winter-hat.jpeg'
 import shopHoodie from './assets/shop-hoodie.jpeg'
 
 // Canonical public URL of the site (deployed on Vercel) — used for the QR code.
-export const SITE_URL = 'https://hayastani-armatnery-htawdha09-razmik2013cr7s-projects.vercel.app'
+// NOTE: the *-projects.vercel.app variant of this domain sits behind Vercel's
+// SSO login wall, so the QR must always encode this clean production domain.
+export const SITE_URL = 'https://hayastani-armatnery.vercel.app'
 
 export const CATEGORIES = [
   { id: 'all', labelKey: 'nav.all', days: null },
