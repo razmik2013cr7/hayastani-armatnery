@@ -1,8 +1,12 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { useAuth } from '../AuthContext.jsx'
+import AuthModal from './AuthModal.jsx'
 
 const fmt = new Intl.NumberFormat('hy-AM')
 
 export default function TourModal({ tour, onClose, onBuy, t }) {
+  const { user } = useAuth()
+  const [authOpen, setAuthOpen] = useState(false)
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
@@ -45,12 +49,17 @@ export default function TourModal({ tour, onClose, onBuy, t }) {
             <span className="modal-price">
               {fmt.format(tour.price)} ֏
             </span>
-            <button type="button" className="btn btn-primary" onClick={onBuy}>
-              🎫 {t.modal.buy}
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => (user ? onBuy() : setAuthOpen(true))}
+            >
+              🎫 {user ? t.modal.buy : t.modal.signInToBuy}
             </button>
           </div>
         </div>
       </div>
+      {authOpen && <AuthModal t={t} onClose={() => setAuthOpen(false)} />}
     </div>
   )
 }

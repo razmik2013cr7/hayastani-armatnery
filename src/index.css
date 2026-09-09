@@ -1433,6 +1433,25 @@ body {
   text-decoration: none;
 }
 
+/* ---------- Sign-in gate (purchases require an account) ---------- */
+.gate-box {
+  text-align: center;
+  padding: 26px 10px 10px;
+}
+
+.gate-icon {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+}
+
+.gate-box h3 {
+  margin: 0 0 6px;
+}
+
+.gate-box .btn {
+  margin-top: 14px;
+}
+
 /* ---------- Live seat map + staff PIN ---------- */
 .pin-overlay {
   position: fixed;

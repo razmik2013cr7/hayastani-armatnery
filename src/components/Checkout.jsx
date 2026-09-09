@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { BUS_SEAT_ROWS, EXTRAS, PAYMENT_METHODS, STAFF_PIN, TOUR_TYPES, TAKEN_SEATS } from '../data.js'
 import { useAuth } from '../AuthContext.jsx'
+import AuthModal from './AuthModal.jsx'
 import ticketLogo from '../assets/ticket-logo.jpeg'
 
 const fmt = new Intl.NumberFormat('hy-AM')
@@ -442,6 +443,7 @@ function Success({ tour, options, seat, card, method, tourType, total, onClose, 
 
 export default function Checkout({ tour, onClose, t }) {
   const { user, supabase } = useAuth()
+  const [authOpen, setAuthOpen] = useState(false)
   const [step, setStep] = useState(1)
   const [options, setOptions] = useState({ photoshoot: false, food: false, cottage: false })
   const [method, setMethod] = useState(null)
@@ -459,6 +461,32 @@ export default function Checkout({ tour, onClose, t }) {
   }, [tour, options, tourType])
 
   const steps = [t.checkout.step1, t.checkout.step2, t.checkout.step3]
+
+  // Buying requires an account — no steps are reachable while signed out.
+  if (!user) {
+    return (
+      <div className="checkout-overlay" onClick={onClose}>
+        <div className="checkout" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+          <button type="button" className="modal-close" aria-label={t.modal.close} onClick={onClose}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+          <div className="checkout-body">
+            <div className="gate-box">
+              <div className="gate-icon" aria-hidden="true">🔐</div>
+              <h3>{t.checkout.needAccountTitle}</h3>
+              <p className="t-sub">{t.checkout.needAccountText}</p>
+              <button type="button" className="btn btn-primary" onClick={() => setAuthOpen(true)}>
+                👤 {t.auth.signIn}
+              </button>
+            </div>
+            {authOpen && <AuthModal t={t} onClose={() => setAuthOpen(false)} />}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="checkout-overlay" onClick={onClose}>
