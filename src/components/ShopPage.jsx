@@ -3,6 +3,8 @@ import { SHOP_ITEMS } from '../data.js'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
 import { getGuestCoins, setGuestCoins, usePinUnlocked } from '../pinAccess.js'
+
+const SHOP_SCOPE = 'shop'
 import NavTabs from './NavTabs.jsx'
 import { translations } from '../i18n.js'
 import mainLogo from '../assets/main-logo.jpeg'
@@ -18,7 +20,7 @@ function fmt(n) {
 
 export default function ShopPage({ onBack }) {
   const { user, supabase } = useAuth()
-  const pinUnlocked = usePinUnlocked()
+  const pinUnlocked = usePinUnlocked(SHOP_SCOPE)
   const [authOpen, setAuthOpen] = useState(false)
   const [lang, setLang] = useState(readLang)
   const [balance, setBalance] = useState(null) // null = loading

@@ -3,11 +3,13 @@ import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
 import { usePinUnlocked } from '../pinAccess.js'
 
+const SHOP_SCOPE = 'shop'
+
 const fmt = new Intl.NumberFormat('hy-AM')
 
 export default function TourModal({ tour, onClose, onBuy, t }) {
   const { user } = useAuth()
-  const pinUnlocked = usePinUnlocked()
+  const pinUnlocked = usePinUnlocked(SHOP_SCOPE)
   const [authOpen, setAuthOpen] = useState(false)
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()

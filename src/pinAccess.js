@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react'
 
-// Staff PIN access — entering the PIN unlocks login-gated features
-// (buying tickets, shop purchases, QR coin rewards) without an account.
-// The unlock persists on this device until locked again.
-const KEY = 'staff_pin_ok'
+// PIN access — entering a PIN unlocks gated features without an account.
+// Two scopes:
+//   • shop   — buying tickets and store items (PIN: STAFF_PIN, e.g. 2011RLOHN)
+//   • rewards — the QR silver-coins page (PIN: REWARD_PIN, 2011)
+// Unlocks persist on the device until locked again.
+const PREFIX = 'pin_ok_'
 const COINS_KEY = 'guest_silver_coins'
 const EVT = 'pinaccess'
 
-export const isPinUnlocked = () => localStorage.getItem(KEY) === '1'
+export const isPinUnlocked = (scope) => localStorage.getItem(PREFIX + scope) === '1'
 
-export function unlockPin() {
-  localStorage.setItem(KEY, '1')
+export function unlockPin(scope) {
+  localStorage.setItem(PREFIX + scope, '1')
   window.dispatchEvent(new Event(EVT))
 }
 
-export function lockPin() {
-  localStorage.removeItem(KEY)
+export function lockPin(scope) {
+  localStorage.removeItem(PREFIX + scope)
   window.dispatchEvent(new Event(EVT))
 }
 
@@ -27,16 +29,16 @@ export function setGuestCoins(n) {
   window.dispatchEvent(new Event(EVT))
 }
 
-export function usePinUnlocked() {
-  const [unlocked, setUnlocked] = useState(isPinUnlocked)
+export function usePinUnlocked(scope) {
+  const [unlocked, setUnlocked] = useState(() => isPinUnlocked(scope))
   useEffect(() => {
-    const sync = () => setUnlocked(isPinUnlocked())
+    const sync = () => setUnlocked(isPinUnlocked(scope))
     window.addEventListener(EVT, sync)
     window.addEventListener('storage', sync)
     return () => {
       window.removeEventListener(EVT, sync)
       window.removeEventListener('storage', sync)
     }
-  }, [])
+  }, [scope])
   return unlocked
 }

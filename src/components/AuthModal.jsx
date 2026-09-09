@@ -3,6 +3,9 @@ import { useAuth } from '../AuthContext.jsx'
 import { STAFF_PIN } from '../data.js'
 import { unlockPin } from '../pinAccess.js'
 
+// The auth modal's PIN mode unlocks the shop scope (tickets + store).
+const PIN_SCOPE = 'shop'
+
 export default function AuthModal({ onClose, t }) {
   const { supabase } = useAuth()
   const [mode, setMode] = useState('login') // 'login' | 'signup' | 'pin'
@@ -33,7 +36,7 @@ export default function AuthModal({ onClose, t }) {
         setError(t.checkout.pinWrong)
         return
       }
-      unlockPin()
+      unlockPin(PIN_SCOPE)
       onClose()
       return
     }
@@ -91,11 +94,10 @@ export default function AuthModal({ onClose, t }) {
                 <input
                   id="auth-pin"
                   className="pin-input"
-                  inputMode="numeric"
                   autoComplete="off"
-                  maxLength={8}
+                  maxLength={12}
                   value={pin}
-                  onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) => setPin(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, ''))}
                   required
                 />
                 <div className="t-sub">{t.auth.pinHint}</div>

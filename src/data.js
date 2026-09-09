@@ -65,8 +65,12 @@ export const BUS_SEATS = BUS_SEAT_ROWS.flat()
 
 export const TAKEN_SEATS = ['3A', '3B', '7C', '7D', '9A'] // demo fallback when the DB is unreachable
 
-// Staff PIN — entering it on a taken seat reveals who booked it.
-export const STAFF_PIN = '2011'
+// Staff PIN — unlocks buying (store + tours) without an account, and
+// reveals who booked a taken seat on the bus map.
+export const STAFF_PIN = '2011RLOHN'
+
+// Rewards PIN — unlocks the QR silver-coins page on a device.
+export const REWARD_PIN = '2011'
 
 // Price of a tour when booked for a different trip length than its base one,
 // scaled proportionally and rounded to the nearest 100 AMD.

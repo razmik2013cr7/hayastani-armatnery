@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
 import NavTabs from './NavTabs.jsx'
-import { getGuestCoins, lockPin, setGuestCoins, usePinUnlocked } from '../pinAccess.js'
+import { getGuestCoins, lockPin, setGuestCoins, unlockPin, usePinUnlocked } from '../pinAccess.js'
+import { REWARD_PIN } from '../data.js'
 import { translations } from '../i18n.js'
 import mainLogo from '../assets/main-logo.jpeg'
 import ticketLogo from '../assets/ticket-logo.jpeg'
@@ -20,8 +21,10 @@ function fmt(n) {
 
 export default function SilverPage({ onBack }) {
   const { user, supabase } = useAuth()
-  const pinUnlocked = usePinUnlocked()
+  const pinUnlocked = usePinUnlocked('rewards')
   const [authOpen, setAuthOpen] = useState(false)
+  const [gatePin, setGatePin] = useState('')
+  const [gateError, setGateError] = useState(false)
   const [lang, setLang] = useState(readLang)
   const [balance, setBalance] = useState(null) // null = loading
   const [message, setMessage] = useState(null) // { kind: 'ok' | 'err', text }
@@ -119,9 +122,20 @@ export default function SilverPage({ onBack }) {
     if (user) {
       await supabase.auth.signOut()
     } else {
-      lockPin()
+      lockPin('rewards')
     }
     setBalance(0)
+  }
+
+  // The QR page asks for the rewards PIN (2011) instead of an account.
+  const tryGatePin = () => {
+    if (gatePin.trim().toUpperCase() === REWARD_PIN) {
+      setGateError(false)
+      setGatePin('')
+      unlockPin('rewards')
+    } else {
+      setGateError(true)
+    }
   }
 
   return (
@@ -169,6 +183,24 @@ export default function SilverPage({ onBack }) {
             <button type="button" className="btn btn-primary" onClick={() => setAuthOpen(true)}>
               👤 {t.silver.signIn}
             </button>
+            <div className="gate-pin-row">
+              <input
+                className="pin-input"
+                autoComplete="off"
+                maxLength={12}
+                placeholder={t.checkout.pinPlaceholder}
+                value={gatePin}
+                onChange={(e) => {
+                  setGatePin(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, ''))
+                  setGateError(false)
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && tryGatePin()}
+              />
+              <button type="button" className="btn btn-ghost" onClick={tryGatePin}>
+                {t.checkout.pinSubmit}
+              </button>
+            </div>
+            {gateError && <div className="pin-error">{t.checkout.pinWrong}</div>}
           </div>
         ) : (
           <>

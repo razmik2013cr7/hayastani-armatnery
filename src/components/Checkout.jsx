@@ -3,6 +3,8 @@ import { BUS_SEAT_ROWS, CATEGORIES, EXTRAS, PAYMENT_METHODS, STAFF_PIN, TOUR_TYP
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
 import { usePinUnlocked } from '../pinAccess.js'
+
+const SHOP_SCOPE = 'shop'
 import ticketLogo from '../assets/ticket-logo.jpeg'
 
 const fmt = new Intl.NumberFormat('hy-AM')
@@ -247,12 +249,11 @@ function PinOverlay({ seat, error, onSubmit, onClose, t }) {
           <input
             ref={inputRef}
             className="pin-input"
-            inputMode="numeric"
             autoComplete="off"
-            maxLength={8}
+            maxLength={12}
             placeholder={t.checkout.pinPlaceholder}
             value={pin}
-            onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+            onChange={(e) => setPin(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, ''))}
           />
           {error && <div className="pin-error">{error}</div>}
           <div className="checkout-actions" style={{ marginTop: 12 }}>
@@ -473,7 +474,7 @@ function Success({ tour, days, options, seat, card, method, tourType, total, onC
 
 export default function Checkout({ tour, categoryDays = null, onClose, t }) {
   const { user, supabase } = useAuth()
-  const pinUnlocked = usePinUnlocked()
+  const pinUnlocked = usePinUnlocked(SHOP_SCOPE)
   const [authOpen, setAuthOpen] = useState(false)
   const [step, setStep] = useState(1)
   const [options, setOptions] = useState({ photoshoot: false, food: false, cottage: false })
