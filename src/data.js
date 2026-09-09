@@ -68,6 +68,13 @@ export const TAKEN_SEATS = ['3A', '3B', '7C', '7D', '9A'] // demo fallback when 
 // Staff PIN — entering it on a taken seat reveals who booked it.
 export const STAFF_PIN = '2011'
 
+// Price of a tour when booked for a different trip length than its base one,
+// scaled proportionally and rounded to the nearest 100 AMD.
+export function tourPriceForDays(tour, days) {
+  if (days === tour.days) return tour.price
+  return Math.round((tour.price * days) / tour.days / 100) * 100
+}
+
 // Souvenir shop — prices are in silver coins, earned from the QR page.
 export const SHOP_ITEMS = [
   { id: 'shirt', image: shopShirt, price: 1500 },

@@ -1473,6 +1473,55 @@ body {
   margin-top: 14px;
 }
 
+/* ---------- Trip-length picker (checkout step 1) ---------- */
+.days-picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.day-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.day-opt:hover {
+  border-color: var(--gold);
+}
+
+.day-opt.active {
+  border-color: var(--red);
+  background: rgba(200, 16, 46, 0.05);
+  box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
+}
+
+.day-opt .day-name {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+
+.day-opt .day-price {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--red-dark);
+}
+
+@media (max-width: 560px) {
+  .days-picker {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------- Live seat map + staff PIN ---------- */
 .pin-overlay {
   position: fixed;

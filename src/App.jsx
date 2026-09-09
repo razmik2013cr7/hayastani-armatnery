@@ -130,6 +130,7 @@ export default function App() {
       {checkoutTour && (
         <Checkout
           tour={checkoutTour}
+          categoryDays={days}
           t={t}
           onClose={() => setCheckoutTour(null)}
         />

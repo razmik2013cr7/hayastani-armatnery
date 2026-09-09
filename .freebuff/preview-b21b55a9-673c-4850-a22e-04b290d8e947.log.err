@@ -1,2 +1,69 @@
 npm notice run hayastani-armatnery@1.0.0 dev
 npm notice run vite
+[2m10:00:42 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\Users\Razmik\Desktop\Rafik\src\components\Checkout.jsx: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (60:16)
+
+[0m [90m 58 |[31m                   [33m<[31m[33mspan[31m className[33m=[31m[32m"day-price"[31m[33m>[31m{fmt[33m.[31mformat(price)} ֏[33m<[31m[33m/[31m[33mspan[31m[33m>[31m
+ [90m 59 |[31m                 [33m<[31m[33m/[31m[33mbutton[31m[33m>[31m
+[31m[1m>[22m[31m[90m 60 |[31m                 [33m<[31m[33mdayPriceContext[31m[33m.[31m[33mProvider[31m value[33m=[31m{price}[33m>[31m
+ [90m    |[31m                 [31m[1m^[22m[31m
+ [90m 61 |[31m                   [33m<[31m[33mspan[31m [33m/[31m[33m>[31m
+ [90m 62 |[31m                 [33m<[31m[33m/[31m[33mdayPriceContext[31m[33m.[31m[33mProvider[31m[33m>[31m
+ [90m 63 |[31m               )[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/Users/Razmik/Desktop/Rafik/src/components/Checkout.jsx[39m:60:16
+[33m  58 |                    <span className="day-price">{fmt.format(price)} ֏</span>
+  59 |                  </button>
+  60 |                  <dayPriceContext.Provider value={price}>
+     |                  ^
+  61 |                    <span />
+  62 |                  </dayPriceContext.Provider>[39m
+      at constructor (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.jsxParseElementAt (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:4758:18)
+      at JSXParserMixin.jsxParseElement (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:4765:17)
+      at JSXParserMixin.parseExprAtom (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:4775:19)
+      at JSXParserMixin.parseExprSubscripts (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOps (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10925:23)
+      at JSXParserMixin.parseMaybeConditional (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12455:12)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseMaybeAssignAllowInOrVoidPattern (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12522:17)
+      at JSXParserMixin.parseParenAndDistinguishExpression (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11701:28)
+      at JSXParserMixin.parseExprAtom (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11357:23)
+      at JSXParserMixin.parseExprAtom (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOps (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10925:23)
+      at JSXParserMixin.parseMaybeConditional (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10852:21)
+      at JSXParserMixin.parseExpressionBase (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10805:23)
+      at C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10801:39
+      at JSXParserMixin.allowInAnd (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseExpression (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10801:17)
+      at JSXParserMixin.parseReturnStatement (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13171:28)
+      at JSXParserMixin.parseStatementContent (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12827:21)
+      at JSXParserMixin.parseStatementLike (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseArrowExpression (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:12104:10)
+      at JSXParserMixin.parseParenAndDistinguishExpression (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11713:12)
+      at JSXParserMixin.parseExprAtom (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11357:23)
+      at JSXParserMixin.parseExprAtom (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOps (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10925:23)
+      at JSXParserMixin.parseMaybeConditional (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\Users\Razmik\Desktop\Rafik\node_modules\@babel\parser\lib\index.js:10821:39

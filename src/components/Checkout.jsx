@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { BUS_SEAT_ROWS, EXTRAS, PAYMENT_METHODS, STAFF_PIN, TOUR_TYPES, TAKEN_SEATS } from '../data.js'
+import { BUS_SEAT_ROWS, CATEGORIES, EXTRAS, PAYMENT_METHODS, STAFF_PIN, TOUR_TYPES, TAKEN_SEATS, tourPriceForDays } from '../data.js'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
 import ticketLogo from '../assets/ticket-logo.jpeg'
@@ -36,10 +36,34 @@ function OptionRow({ icon, label, price, value, onChange, t }) {
   )
 }
 
-function StepOptions({ options, setOptions, total, onNext, t }) {
+function StepOptions({ tour, options, setOptions, total, chooseDays, days, setDays, onNext, t }) {
   return (
     <div>
       <h3>{t.checkout.step1}</h3>
+
+      {chooseDays && (
+        <div className="departure-box">
+          <div className="dep-label">{t.checkout.chooseDays}</div>
+          <div className="days-picker">
+            {CATEGORIES.filter((c) => c.days).map((c) => {
+              const price = tourPriceForDays(tour, c.days)
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  className={`day-opt${days === c.days ? ' active' : ''}`}
+                  onClick={() => setDays(c.days)}
+                >
+                  <span className="day-name">📅 {t.nav[c.labelKey.split('.')[1]]}</span>
+                  <span className="day-price">{fmt.format(price)} ֏</span>
+                </button>
+              )
+            })}
+          </div>
+          <div className="t-sub" style={{ marginTop: 4 }}>{t.checkout.chooseDaysHint}</div>
+        </div>
+      )}
+
       <div className="option-grid">
         {EXTRAS.map((ex) => (
           <OptionRow
@@ -345,7 +369,7 @@ function StepSeats({ tour, seat, setSeat, onBack, onFinish, t }) {
   )
 }
 
-function Ticket({ tour, options, seat, card, method, tourType, total, onClose, t }) {
+function Ticket({ tour, days, options, seat, card, method, tourType, total, onClose, t }) {
   const code = useMemo(() => {
     let h = ''
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -370,6 +394,10 @@ function Ticket({ tour, options, seat, card, method, tourType, total, onClose, t
             <div className="t-field">
               <div className="t-label">{t.checkout.departure}</div>
               <div className="t-value">{t.checkout.departureAddress}</div>
+            </div>
+            <div className="t-field">
+              <div className="t-label">{t.modal.duration}</div>
+              <div className="t-value">{days} {t.checkout.daysWord}</div>
             </div>
             <div className="t-field">
               <div className="t-label">{t.checkout.selectSeat}</div>
@@ -416,7 +444,7 @@ function Ticket({ tour, options, seat, card, method, tourType, total, onClose, t
   )
 }
 
-function Success({ tour, options, seat, card, method, tourType, total, onClose, t }) {
+function Success({ tour, days, options, seat, card, method, tourType, total, onClose, t }) {
   return (
     <div className="success">
       <div className="check-circle">
@@ -428,6 +456,7 @@ function Success({ tour, options, seat, card, method, tourType, total, onClose, 
       <p>Ticket bought</p>
       <Ticket
         tour={tour}
+        days={days}
         options={options}
         seat={seat}
         card={card}
@@ -441,7 +470,7 @@ function Success({ tour, options, seat, card, method, tourType, total, onClose, 
   )
 }
 
-export default function Checkout({ tour, onClose, t }) {
+export default function Checkout({ tour, categoryDays = null, onClose, t }) {
   const { user, supabase } = useAuth()
   const [authOpen, setAuthOpen] = useState(false)
   const [step, setStep] = useState(1)
@@ -451,14 +480,17 @@ export default function Checkout({ tour, onClose, t }) {
   const [tourType, setTourType] = useState('group')
   const [seat, setSeat] = useState(null)
   const [finished, setFinished] = useState(false)
+  // Tours opened from the "All" category ask for the trip length at purchase.
+  const [days, setDays] = useState(tour.days)
+  const needsDayChoice = categoryDays == null
 
-  // Whole-tour price = tour base + chosen extras + personal-tour surcharge.
+  // Whole-tour price = base price for the chosen length + extras + personal-tour surcharge.
   const total = useMemo(() => {
-    let sum = tour.price
+    let sum = tourPriceForDays(tour, days)
     for (const ex of EXTRAS) if (options[ex.key]) sum += ex.price
     sum += TOUR_TYPES.find((ty) => ty.id === tourType)?.price ?? 0
     return sum
-  }, [tour, options, tourType])
+  }, [tour, days, options, tourType])
 
   const steps = [t.checkout.step1, t.checkout.step2, t.checkout.step3]
 
@@ -518,6 +550,7 @@ export default function Checkout({ tour, onClose, t }) {
           {finished ? (
             <Success
               tour={tour}
+              days={days}
               options={options}
               seat={seat}
               card={card}
@@ -528,7 +561,17 @@ export default function Checkout({ tour, onClose, t }) {
               t={t}
             />
           ) : step === 1 ? (
-            <StepOptions options={options} setOptions={setOptions} total={total} onNext={() => setStep(2)} t={t} />
+            <StepOptions
+              options={options}
+              setOptions={setOptions}
+              total={total}
+              chooseDays={needsDayChoice}
+              days={days}
+              setDays={setDays}
+              tour={tour}
+              onNext={() => setStep(2)}
+              t={t}
+ />
           ) : step === 2 ? (
             <StepPayment
               method={method}
@@ -553,7 +596,7 @@ export default function Checkout({ tour, onClose, t }) {
                   await supabase.from('bookings').insert({
                     user_id: user?.id ?? null,
                     tour_id: tour.id,
-                    days: tour.days,
+                    days,
                     seats: seat,
                     buyer_name:
                       card.name?.trim() ||
