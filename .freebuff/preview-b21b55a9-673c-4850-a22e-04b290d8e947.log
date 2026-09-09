@@ -1,11 +1,10 @@
-Re-optimizing dependencies because lockfile has changed
 
-  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m273[22m[2m[0m ms[22m
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m222[22m[2m[0m ms[22m
 
   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
   [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.100.96:[1m5173[22m/[39m
-[2m10:23:01 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/Header.jsx[22m
-[2m10:26:47 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/Checkout.jsx[22m
-[2m10:26:47 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/TourModal.jsx[22m
-[2m10:26:47 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/AuthModal.jsx[22m
-[2m10:26:47 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m9:28:10 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/components/TourNav.jsx, /src/components/TourGrid.jsx, /src/components/Checkout.jsx[22m
+[2m9:29:32 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/components/Header.jsx, /src/components/SilverPage.jsx[22m
+[2m9:30:05 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/components/Header.jsx, /src/components/SilverPage.jsx[22m
+[2m9:30:30 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx[22m
+[2m9:30:38 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css[22m

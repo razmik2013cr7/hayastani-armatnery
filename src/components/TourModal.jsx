@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 const fmt = new Intl.NumberFormat('hy-AM')
 
-export default function TourModal({ tour, peopleCount, onClose, onBuy, t }) {
+export default function TourModal({ tour, onClose, onBuy, t }) {
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
@@ -39,18 +39,11 @@ export default function TourModal({ tour, peopleCount, onClose, onBuy, t }) {
               <dt>{t.modal.duration}</dt>
               <dd>{info.duration}</dd>
             </div>
-            <div className="meta-row">
-              <dt>{t.checkout.peopleCount}</dt>
-              <dd>{peopleCount}</dd>
-            </div>
           </dl>
 
           <div className="modal-foot">
             <span className="modal-price">
-              {fmt.format(tour.price * peopleCount)} ֏{' '}
-              <small>
-                {fmt.format(tour.price)} ֏ {t.card.perPerson}
-              </small>
+              {fmt.format(tour.price)} ֏
             </span>
             <button type="button" className="btn btn-primary" onClick={onBuy}>
               🎫 {t.modal.buy}

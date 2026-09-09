@@ -7,7 +7,7 @@
    npm install
    ```
 2. Supabase credentials live in `.env` at the repo root (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`). The client (`src/supabaseClient.js`) has the same values as fallbacks, so the app runs even without `.env`. For a fresh checkout, copy `.env` from the main checkout or recreate it.
-3. Database schema: run `supabase-schema.sql` once in the Supabase SQL editor (project `xpodpnzdwkmeticzbvvb`) — creates `profiles` + `bookings` with RLS.
+3. Database schema: run `supabase-schema.sql` once in the Supabase SQL editor (project `xpodpnzdwkmeticzbvvb`) — creates `profiles` + `bookings` with RLS. If the tables already exist from an older version, run `supabase-migration.sql` instead (adds the newer columns + policies; idempotent).
 
 ## Run server
 
