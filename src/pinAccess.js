@@ -24,6 +24,21 @@ export function lockPin(scope) {
 // Coin wallet for PIN-unlocked guests (no account to store them in).
 export const getGuestCoins = () => Number(localStorage.getItem(COINS_KEY) || 0)
 
+// Stable per-device session id — encoded in the footer QR so a phone scan
+// can send its coin claim back to the device that DISPLAYED the code.
+const SESSION_KEY = 'qr_session_id'
+
+export function getSessionId() {
+  let id = localStorage.getItem(SESSION_KEY)
+  if (!id) {
+    id =
+      (crypto.randomUUID && crypto.randomUUID()) ||
+      Math.random().toString(36).slice(2) + Date.now().toString(36)
+    localStorage.setItem(SESSION_KEY, id)
+  }
+  return id
+}
+
 export function setGuestCoins(n) {
   localStorage.setItem(COINS_KEY, String(n))
   window.dispatchEvent(new Event(EVT))

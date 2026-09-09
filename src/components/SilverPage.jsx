@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import NavTabs from './NavTabs.jsx'
-import { getGuestCoins, setGuestCoins } from '../pinAccess.js'
+import { getSessionId, getGuestCoins, setGuestCoins } from '../pinAccess.js'
 import { REWARD_PIN } from '../data.js'
+import { supabase } from '../supabaseClient.js'
 import { translations } from '../i18n.js'
 import mainLogo from '../assets/main-logo.jpeg'
 import ticketLogo from '../assets/ticket-logo.jpeg'
@@ -28,6 +29,15 @@ export default function SilverPage({ onBack }) {
   const [gatePin, setGatePin] = useState('')
   const [gateError, setGateError] = useState(false)
   const claimLock = useRef(false)
+  // When opened by scanning the footer QR, the URL carries the session id
+  // of the device that DISPLAYED the code. The claim is then sent THERE.
+  const [remoteSession, setRemoteSession] = useState(null)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const s = params.get('s')
+    if (s) setRemoteSession(s)
+  }, [])
 
   useEffect(() => {
     localStorage.setItem('lang', lang)
@@ -40,15 +50,38 @@ export default function SilverPage({ onBack }) {
     setTimeout(() => setMessage(null), 4000)
   }
 
-  // Claim the reward once per unlocked visit — device-local wallet only.
+  // Claim the reward once per unlocked visit.
+  // • Scanned from the footer QR → credit the DISPLAYING device (laptop)
+  //   via the qr_claims table + Realtime, then return to the gate.
+  // • Opened directly on this device → credit this device's wallet.
   useEffect(() => {
     if (!unlocked || claimLock.current) return
     claimLock.current = true
+    if (remoteSession) {
+      // Broadcast the claim to the device that displayed the QR — it credits
+      // its own wallet live via Realtime (no database table involved).
+      const ch = supabase.channel(`qr-claims:${remoteSession}`)
+      ch.subscribe((status) => {
+        if (status !== 'SUBSCRIBED') return
+        ch.send({
+          type: 'broadcast',
+          event: 'claim',
+          payload: { from: getSessionId(), coins: COIN_REWARD },
+        })
+        supabase.removeChannel(ch)
+        notify('ok', t.silver.sentToComputer)
+        setTimeout(() => {
+          setUnlocked(false)
+          claimLock.current = false
+        }, 1500)
+      })
+      return
+    }
     const next = getGuestCoins() + COIN_REWARD
     setGuestCoins(next)
     setBalance(next)
     notify('ok', `+${fmt(COIN_REWARD)} 🪙 ${t.silver.claimed}`)
-  }, [unlocked, t])
+  }, [unlocked, remoteSession, t])
 
   const removeCoins = () => {
     if (busy || !balance) return

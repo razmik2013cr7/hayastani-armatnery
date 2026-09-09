@@ -22,3 +22,6 @@ create policy "anyone can view bookings"
 
 -- Silver coins balance for the QR reward page.
 alter table public.profiles add column if not exists silver_coins int not null default 0;
+
+-- QR coin claims are relayed over Supabase Realtime **broadcast** —
+-- no database table is needed for them.

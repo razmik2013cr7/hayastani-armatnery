@@ -8,7 +8,9 @@ import TourModal from './components/TourModal.jsx'
 import Checkout from './components/Checkout.jsx'
 import SilverPage from './components/SilverPage.jsx'
 import ShopPage from './components/ShopPage.jsx'
+import QrClaimListener from './components/QrClaimListener.jsx'
 import { CATEGORIES, SITE_URL } from './data.js'
+import { getSessionId } from './pinAccess.js'
 import { AuthProvider } from './AuthContext.jsx'
 import { translations } from './i18n.js'
 import mainLogo from './assets/main-logo.jpeg'
@@ -27,10 +29,11 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  // The footer QR encodes the DEPLOYED site's silver-coins link (not localhost),
-  // so scanning it with a phone always lands on the live rewards page.
+  // The footer QR encodes the DEPLOYED rewards link (not localhost) plus
+  // this device's session id — so a phone scan credits the coins to the
+  // device that DISPLAYED the code, not to the phone itself.
   useEffect(() => {
-    const url = `${SITE_URL}/#/silver`
+    const url = `${SITE_URL}/?s=${encodeURIComponent(getSessionId())}#/silver`
     QRCode.toDataURL(url, { width: 240, margin: 1, color: { dark: '#23201c', light: '#faf6ef' } })
       .then(setQrDataUrl)
       .catch(() => setQrDataUrl(null))
@@ -60,7 +63,7 @@ export default function App() {
     return copy[lang]
   }, [lang])
 
-  if (route === '#/silver') {
+  if (route === '#/silver' || route.startsWith('#/silver?')) {
     return (
       <AuthProvider>
         <SilverPage onBack={() => { window.location.hash = ''; setRoute('') }} />
@@ -68,7 +71,7 @@ export default function App() {
     )
   }
 
-  if (route === '#/shop') {
+  if (route === '#/shop' || route.startsWith('#/shop?')) {
     return (
       <AuthProvider>
         <ShopPage onBack={() => { window.location.hash = ''; setRoute('') }} />
@@ -84,6 +87,7 @@ export default function App() {
       <Header lang={lang} onLangChange={setLang} t={t} />
       <NavTabs t={t} />
       <TourNav active={category} onChange={setCategory} t={t} />
+      <QrClaimListener />
 
       <section className="hero">
         <div className="hero-inner">
