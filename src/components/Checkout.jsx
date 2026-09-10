@@ -164,7 +164,7 @@ function StepPayment({ method, setMethod, card, setCard, tourType, setTourType, 
               onClick={() => setTourType(ty.id)}
             >
               <span aria-hidden="true">{ty.icon}</span>
-              <span className="tt-name">{ty.id === 'personal' ? t.checkout.personal : t.checkout.group}</span>
+              <span className="tt-name">{t.checkout[ty.id]}</span>
               <span className="tt-price">{ty.price > 0 ? `+${fmt.format(ty.price)} ֏` : '—'}</span>
             </button>
           ))}
@@ -408,7 +408,7 @@ function Ticket({ tour, days, options, seat, card, method, tourType, total, onCl
             </div>
             <div className="t-field">
               <div className="t-label">{t.checkout.selectClass}</div>
-              <div className="t-value">{tourType === 'personal' ? t.checkout.personal : t.checkout.group}</div>
+              <div className="t-value">{t.checkout[tourType] || '—'}</div>
             </div>
             <div className="t-field">
               <div className="t-label">{t.checkout.photoshoot}</div>
@@ -481,14 +481,15 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
   const [options, setOptions] = useState({ photoshoot: false, food: false, cottage: false })
   const [method, setMethod] = useState(null)
   const [card, setCard] = useState({ number: '', name: '', expiry: '', cvc: '', phone: '' })
-  const [tourType, setTourType] = useState('group')
+  // Only personal tours are offered — the group option was removed.
+  const [tourType, setTourType] = useState('personal')
   const [seat, setSeat] = useState(null)
   const [finished, setFinished] = useState(false)
   // Tours opened from the "All" category ask for the trip length at purchase.
   const [days, setDays] = useState(tour.days)
   const needsDayChoice = categoryDays == null
 
-  // Whole-tour price = base price for the chosen length + extras + personal-tour surcharge.
+  // Whole-tour price = base price for the chosen length + extras + tour-type surcharge.
   const total = useMemo(() => {
     let sum = tourPriceForDays(tour, days)
     for (const ex of EXTRAS) if (options[ex.key]) sum += ex.price

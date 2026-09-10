@@ -40,9 +40,9 @@ export const EXTRAS = [
   { key: 'cottage', icon: '🏡', price: 25000 },
 ]
 
-// Step-2 choice: shared bus tour or a personal (private) one.
+// Step-2 choice: only personal (private) tours are offered — the group
+// option (Ընդհանուր տուր) was removed at the owner's request.
 export const TOUR_TYPES = [
-  { id: 'group', icon: '🚌', price: 0 },
   { id: 'personal', icon: '🚐', price: 20000 },
 ]
 
