@@ -1831,3 +1831,129 @@ body {
   font-size: 0.78rem;
   color: var(--muted);
 }
+
+/* ---------- Loyalty card («Հավատարմության Քարտ») ---------- */
+.loyalty-footer-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.loyalty-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* The card itself — navy arch + gold, echoing the printed design. */
+.loyalty-card {
+  width: 100%;
+  max-width: 340px;
+  background: linear-gradient(180deg, #2c3a5c 0%, #232c48 55%, #f6f1e7 55%, #f6f1e7 100%);
+  border: 2px solid #c9a86a;
+  border-radius: 16px;
+  padding: 16px 14px 14px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(35, 44, 72, 0.35);
+}
+
+.loyalty-arch img {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #c9a86a;
+  box-shadow: 0 0 0 4px rgba(201, 168, 106, 0.25);
+}
+
+.loyalty-title {
+  margin-top: 10px;
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+}
+
+.loyalty-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 10px 2px 8px;
+  padding: 6px 10px;
+  background: #fdfaf3;
+  border: 1px solid #c9a86a;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #232c48;
+}
+
+.loyalty-stars {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 4px 2px;
+}
+
+.loyalty-star {
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid #d8cbb0;
+  border-radius: 50%;
+  cursor: pointer;
+  filter: grayscale(1);
+  opacity: 0.45;
+  transition: all 0.15s ease;
+}
+
+.loyalty-star.on {
+  filter: none;
+  opacity: 1;
+  border-color: #c9a86a;
+  box-shadow: 0 0 8px rgba(201, 168, 106, 0.55);
+}
+
+.loyalty-count {
+  margin-top: 8px;
+  font-weight: 700;
+  color: #232c48;
+}
+
+.loyalty-hint {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #6b6353;
+}
+
+.loyalty-reward {
+  width: 100%;
+  border: 1px dashed #c9a86a;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.loyalty-reward-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.loyalty-reward-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px;
+  background: #fdfaf3;
+  border: 1px solid #c9a86a;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.loyalty-reward-item em {
+  font-style: normal;
+  font-size: 0.75rem;
+  color: var(--muted);
+}

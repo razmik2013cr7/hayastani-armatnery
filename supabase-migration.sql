@@ -97,3 +97,8 @@ end;
 $$;
 
 grant execute on function public.reset_bus_bookings(text) to anon, authenticated;
+
+-- Loyalty card («Հավատարմության Քարտ») state for signed-in users.
+-- Guests keep the same data in their device's localStorage.
+alter table public.profiles add column if not exists loyalty_stars int not null default 0;
+alter table public.profiles add column if not exists loyalty_activated boolean not null default false;

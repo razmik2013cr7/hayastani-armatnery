@@ -7,6 +7,7 @@ import TourGrid from './components/TourGrid.jsx'
 import TourModal from './components/TourModal.jsx'
 import Checkout from './components/Checkout.jsx'
 import SilverPage from './components/SilverPage.jsx'
+import LoyaltyCard from './components/LoyaltyCard.jsx'
 import ShopPage from './components/ShopPage.jsx'
 import QrClaimListener from './components/QrClaimListener.jsx'
 import { AdminEntry } from './components/AdminPanel.jsx'
@@ -22,6 +23,7 @@ export default function App() {
   const [category, setCategory] = useState('3')
   const [selectedTour, setSelectedTour] = useState(null)
   const [checkoutTour, setCheckoutTour] = useState(null)
+  const [loyaltyOpen, setLoyaltyOpen] = useState(false)
   const [route, setRoute] = useState(() => window.location.hash)
   const [qrDataUrl, setQrDataUrl] = useState(null)
 
@@ -122,6 +124,9 @@ export default function App() {
           <a className="footer-link" href="#/shop" aria-label="Shop">
             🛍
           </a>
+          <button type="button" className="footer-link loyalty-footer-btn" onClick={() => setLoyaltyOpen(true)}>
+            ⭐
+          </button>
         </div>
       </footer>
 
@@ -145,6 +150,8 @@ export default function App() {
           onClose={() => setCheckoutTour(null)}
         />
       )}
+
+      {loyaltyOpen && <LoyaltyCard t={t} onClose={() => setLoyaltyOpen(false)} />}
     </AuthProvider>
   )
 }
