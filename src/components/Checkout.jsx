@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { BUS_SEAT_ROWS, CATEGORIES, EXTRAS, PAYMENT_METHODS, STAFF_PIN, TOUR_TYPES, TAKEN_SEATS, tourPriceForDays } from '../data.js'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
-import { usePinUnlocked } from '../pinAccess.js'
+import { lockPin, usePinUnlocked } from '../pinAccess.js'
 
 const SHOP_SCOPE = 'shop'
 import ticketLogo from '../assets/ticket-logo.jpeg'
@@ -477,6 +477,9 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
   const { user, supabase } = useAuth()
   const pinUnlocked = usePinUnlocked(SHOP_SCOPE)
   const [authOpen, setAuthOpen] = useState(false)
+  // The PIN unlock is one-shot: closing the checkout (after buying or not)
+  // always re-locks it, so the next purchase asks for the PIN again.
+  useEffect(() => () => lockPin(SHOP_SCOPE), [])
   const [step, setStep] = useState(1)
   const [options, setOptions] = useState({ photoshoot: false, food: false, cottage: false })
   const [method, setMethod] = useState(null)

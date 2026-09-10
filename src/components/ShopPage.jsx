@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { SHOP_ITEMS } from '../data.js'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
-import { getGuestCoins, setGuestCoins, usePinUnlocked } from '../pinAccess.js'
+import { getGuestCoins, lockPin, setGuestCoins, usePinUnlocked } from '../pinAccess.js'
 
 const SHOP_SCOPE = 'shop'
 import NavTabs from './NavTabs.jsx'
@@ -48,9 +48,10 @@ export default function ShopPage({ onBack }) {
       setBalance(error ? 0 : (data?.silver_coins ?? 0))
       return
     }
-    // PIN-unlocked guests keep their coins on this device.
-    setBalance(pinUnlocked ? getGuestCoins() : 0)
-  }, [user, supabase, pinUnlocked])
+    // Guests keep their coins on this device — visible even while the
+    // PIN is locked (locking only gates purchasing, not the balance).
+    setBalance(getGuestCoins())
+  }, [user, supabase])
 
   useEffect(() => {
     loadBalance()
@@ -113,6 +114,9 @@ export default function ShopPage({ onBack }) {
         buyer: buyerName,
       }),
     }).catch((err) => console.warn('order email failed:', err))
+    // One-shot PIN: after a guest purchase the PIN locks again, so the
+    // next purchase asks for it once more.
+    if (!user) lockPin(SHOP_SCOPE)
     setBusyId(null)
   }
 

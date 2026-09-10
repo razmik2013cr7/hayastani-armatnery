@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
-import { usePinUnlocked } from '../pinAccess.js'
+import { lockPin, usePinUnlocked } from '../pinAccess.js'
 
 const SHOP_SCOPE = 'shop'
 
@@ -11,6 +11,9 @@ export default function TourModal({ tour, onClose, onBuy, t }) {
   const { user } = useAuth()
   const pinUnlocked = usePinUnlocked(SHOP_SCOPE)
   const [authOpen, setAuthOpen] = useState(false)
+  // The PIN unlock is one-shot: it lasts only until this modal closes —
+  // unless we're handing off to the checkout (a purchase is in progress).
+  const buyingRef = useRef(false)
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
@@ -18,6 +21,7 @@ export default function TourModal({ tour, onClose, onBuy, t }) {
     return () => {
       window.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
+      if (!buyingRef.current) lockPin(SHOP_SCOPE)
     }
   }, [onClose])
 
@@ -59,7 +63,14 @@ export default function TourModal({ tour, onClose, onBuy, t }) {
             <button
               type="button"
               className="btn btn-primary"
-              onClick={() => (user || pinUnlocked ? onBuy() : setAuthOpen(true))}
+              onClick={() => {
+                if (user || pinUnlocked) {
+                  buyingRef.current = true
+                  onBuy()
+                } else {
+                  setAuthOpen(true)
+                }
+              }}
             >
               🎫 {user || pinUnlocked ? t.modal.buy : t.modal.signInToBuy}
             </button>
