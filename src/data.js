@@ -54,6 +54,7 @@ export const PAYMENT_METHODS = [
   { id: 'amex', label: 'American Express', type: 'card' },
   { id: 'idram', label: 'Idram', type: 'wallet' },
   { id: 'telcell', label: 'Telcell', type: 'wallet' },
+  { id: 'school', label: 'Դպրոց', type: 'school' },
 ]
 
 // Seat map: 45-seat bus — 2 + 2 seating, driver in front, back row of 5.

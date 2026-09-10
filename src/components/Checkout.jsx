@@ -103,12 +103,14 @@ function StepOptions({ tour, options, setOptions, total, chooseDays, days, setDa
   )
 }
 
-function StepPayment({ method, setMethod, card, setCard, tourType, setTourType, total, onBack, onNext, t }) {
+function StepPayment({ method, setMethod, card, setCard, school, setSchool, tourType, setTourType, total, onBack, onNext, t }) {
+  const [schoolError, setSchoolError] = useState(null)
   const set = (k, fmtFn) => (e) => {
     const v = fmtFn ? fmtFn(e.target.value) : e.target.value
     setCard((c) => ({ ...c, [k]: v }))
   }
   const isCard = method?.type === 'card'
+  const isSchool = method?.type === 'school'
 
   return (
     <div>
@@ -137,7 +139,7 @@ function StepPayment({ method, setMethod, card, setCard, tourType, setTourType, 
             <span>{card.expiry || 'MM/YY'}</span>
           </div>
         </div>
-      ) : (
+      ) : isSchool ? null : (
         <div className="wallet-box">
           <div className="field">
             <label htmlFor="wallet-phone">{t.checkout.phone}</label>
@@ -150,6 +152,41 @@ function StepPayment({ method, setMethod, card, setCard, tourType, setTourType, 
             />
             <div className="t-sub">{t.checkout.phoneHint}</div>
           </div>
+        </div>
+      )}
+
+      {isSchool && (
+        <div className="wallet-box">
+          <div className="dep-label" style={{ marginBottom: 8 }}>{t.checkout.schoolInfo}</div>
+          <div className="field">
+            <label htmlFor="school-first">{t.checkout.schoolFirstName}</label>
+            <input id="school-first" value={school.firstName} onChange={(e) => setSchool((s) => ({ ...s, firstName: e.target.value }))} />
+          </div>
+          <div className="field">
+            <label htmlFor="school-last">{t.checkout.schoolLastName}</label>
+            <input id="school-last" value={school.lastName} onChange={(e) => setSchool((s) => ({ ...s, lastName: e.target.value }))} />
+          </div>
+          <div className="field">
+            <label htmlFor="school-father">{t.checkout.schoolFatherName}</label>
+            <input id="school-father" value={school.fatherName} onChange={(e) => setSchool((s) => ({ ...s, fatherName: e.target.value }))} />
+          </div>
+          <div className="field">
+            <label htmlFor="school-class">{t.checkout.schoolClass}</label>
+            <input id="school-class" value={school.class} onChange={(e) => setSchool((s) => ({ ...s, class: e.target.value }))} />
+          </div>
+          <div className="field">
+            <label htmlFor="school-school">{t.checkout.schoolSchool}</label>
+            <input id="school-school" value={school.school} onChange={(e) => setSchool((s) => ({ ...s, school: e.target.value }))} />
+          </div>
+          <div className="field">
+            <label htmlFor="school-stream">{t.checkout.schoolStream}</label>
+            <input id="school-stream" value={school.stream} onChange={(e) => setSchool((s) => ({ ...s, stream: e.target.value }))} />
+          </div>
+          <div className="field">
+            <label htmlFor="school-teacher">{t.checkout.schoolTeacher}</label>
+            <input id="school-teacher" value={school.teacher} onChange={(e) => setSchool((s) => ({ ...s, teacher: e.target.value }))} />
+          </div>
+          {schoolError && <div className="pin-error">{schoolError}</div>}
         </div>
       )}
 
@@ -180,7 +217,21 @@ function StepPayment({ method, setMethod, card, setCard, tourType, setTourType, 
         <button type="button" className="btn btn-ghost" onClick={onBack}>
           ← {t.checkout.back}
         </button>
-        <button type="button" className="btn btn-primary" onClick={onNext}>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => {
+            if (isSchool) {
+              const filled = Object.values(school).every((v) => v.trim())
+              if (!filled) {
+                setSchoolError(t.checkout.schoolRequired)
+                return
+              }
+            }
+            setSchoolError(null)
+            onNext()
+          }}
+        >
           {t.checkout.pay} {fmt.format(total)} ֏
         </button>
       </div>
@@ -372,7 +423,7 @@ function StepSeats({ tour, seat, setSeat, onBack, onFinish, t }) {
   )
 }
 
-function Ticket({ tour, days, options, seat, card, method, tourType, total, onClose, t }) {
+function Ticket({ tour, days, options, seat, card, method, school, tourType, total, onClose, t }) {
   const code = useMemo(() => {
     let h = ''
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -426,6 +477,16 @@ function Ticket({ tour, days, options, seat, card, method, tourType, total, onCl
               <div className="t-label">{t.checkout.selectPayment}</div>
               <div className="t-value">{method?.label || '—'}</div>
             </div>
+            {method?.type === 'school' && (
+              <div className="t-field">
+                <div className="t-label">{t.checkout.schoolInfo}</div>
+                <div className="t-value">
+                  {[school.firstName, school.lastName].filter(Boolean).join(' ')}
+                  {school.class ? `, ${t.checkout.schoolClass}: ${school.class}` : ''}
+                  {school.school ? `, ${t.checkout.schoolSchool}: ${school.school}` : ''}
+                </div>
+              </div>
+            )}
             <div className="t-field">
               <div className="t-label">{t.checkout.cardHolder}</div>
               <div className="t-value">{card.name || (card.phone ? `+374 ${card.phone}` : '—')}</div>
@@ -447,7 +508,7 @@ function Ticket({ tour, days, options, seat, card, method, tourType, total, onCl
   )
 }
 
-function Success({ tour, days, options, seat, card, method, tourType, total, onClose, t }) {
+function Success({ tour, days, options, seat, card, method, school, tourType, total, onClose, t }) {
   return (
     <div className="success">
       <div className="check-circle">
@@ -464,6 +525,7 @@ function Success({ tour, days, options, seat, card, method, tourType, total, onC
         seat={seat}
         card={card}
         method={method}
+        school={school}
         tourType={tourType}
         total={total}
         onClose={onClose}
@@ -484,6 +546,16 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
   const [options, setOptions] = useState({ photoshoot: false, food: false, cottage: false })
   const [method, setMethod] = useState(null)
   const [card, setCard] = useState({ number: '', name: '', expiry: '', cvc: '', phone: '' })
+  // School-payment details, filled when the «Դպրոց» method is chosen.
+  const [school, setSchool] = useState({
+    firstName: '',
+    lastName: '',
+    fatherName: '',
+    class: '',
+    school: '',
+    stream: '',
+    teacher: '',
+  })
   // Only personal tours are offered — the group option was removed.
   const [tourType, setTourType] = useState('personal')
   const [seat, setSeat] = useState(null)
@@ -563,6 +635,7 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
               seat={seat}
               card={card}
               method={method}
+              school={school}
               tourType={tourType}
               total={total}
               onClose={onClose}
@@ -586,6 +659,8 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
               setMethod={setMethod}
               card={card}
               setCard={setCard}
+              school={school}
+              setSchool={setSchool}
               tourType={tourType}
               setTourType={setTourType}
               total={total}
@@ -607,6 +682,8 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
                     days,
                     seats: seat,
                     buyer_name:
+                      (method?.type === 'school' &&
+                        [school.firstName, school.lastName].filter(Boolean).join(' ')) ||
                       card.name?.trim() ||
                       (card.phone ? `+374 ${card.phone}` : null) ||
                       user?.user_metadata?.full_name ||
