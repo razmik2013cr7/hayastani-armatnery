@@ -20,8 +20,9 @@ create policy "anyone can view bookings"
   on public.bookings for select
   using (true);
 
--- One-time wipe: the bus starts COMPLETELY empty — nobody has bought seats.
-delete from public.bookings;
+-- One-time wipe (already applied on 2026-09-10 — kept as a comment so
+-- re-running this file can never erase real customer bookings again):
+-- delete from public.bookings;
 
 -- Silver coins balance for the QR reward page.
 alter table public.profiles add column if not exists silver_coins int not null default 0;
@@ -46,14 +47,18 @@ create table if not exists public.tours (
 
 alter table public.tours enable row level security;
 
+-- Policies can't use "if not exists", so drop-then-create keeps this file re-runnable.
+drop policy if exists "anyone can view tours" on public.tours;
 create policy "anyone can view tours"
   on public.tours for select
   using (true);
 
+drop policy if exists "anyone can create tours" on public.tours;
 create policy "anyone can create tours"
   on public.tours for insert
   with check (true);
 
+drop policy if exists "anyone can delete tours" on public.tours;
 create policy "anyone can delete tours"
   on public.tours for delete
   using (true);
@@ -76,6 +81,7 @@ create table if not exists public.shop_orders (
 
 alter table public.shop_orders enable row level security;
 
+drop policy if exists "anyone can record shop orders" on public.shop_orders;
 create policy "anyone can record shop orders"
   on public.shop_orders for insert
   with check (true);
