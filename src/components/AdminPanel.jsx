@@ -8,7 +8,7 @@ import { STAFF_PIN } from '../data.js'
 export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
   const { supabase } = useAuth()
   const [unlocked, setUnlocked] = useState(false)
-  const [mode, setMode] = useState(initialMode) // 'add' | 'delete'
+  const [mode, setMode] = useState(initialMode) // 'add' | 'delete' | 'bus'
   const [pin, setPin] = useState('')
   const [pinError, setPinError] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -102,6 +102,19 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
     if (onSaved) onSaved()
   }
 
+  // Wipe every booking so all bus seats show free again. RLS blocks direct
+  // deletes with the anon key, so this goes through the PIN-checked RPC.
+  const cleanBus = async () => {
+    setBusy(true)
+    const { error } = await supabase.rpc('reset_bus_bookings', { pin: STAFF_PIN })
+    setBusy(false)
+    if (error) {
+      notify('err', error.message || t.admin.failed)
+      return
+    }
+    notify('ok', `🚌 ${t.admin.busCleaned}`)
+  }
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal admin-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
@@ -171,6 +184,15 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
                 <button type="submit" className="btn btn-primary" disabled={busy}>{t.admin.save}</button>
               </div>
             </form>
+          ) : mode === 'bus' ? (
+            <div className="admin-form">
+              <h3>🚌 {t.admin.cleanBus}</h3>
+              <p className="t-sub">{t.admin.confirmClean}</p>
+              <div className="checkout-actions">
+                <button type="button" className="btn btn-ghost" onClick={onClose}>{t.admin.cancel}</button>
+                <button type="button" className="btn btn-primary" onClick={cleanBus} disabled={busy}>{t.admin.cleanBus}</button>
+              </div>
+            </div>
           ) : (
             <div className="admin-form">
               <h3>🗑 {t.admin.deleteTour}</h3>
@@ -218,6 +240,9 @@ export function AdminEntry({ t, onSaved }) {
       </button>
       <button type="button" className="btn btn-ghost admin-btn" onClick={() => setOpen('delete')}>
         🗑 {t.admin.deleteTour}
+      </button>
+      <button type="button" className="btn btn-ghost admin-btn" onClick={() => setOpen('bus')}>
+        🚌 {t.admin.cleanBus}
       </button>
       {open && (
         <AdminPanel t={t} initialMode={open} onClose={() => setOpen(null)} onSaved={onSaved} />

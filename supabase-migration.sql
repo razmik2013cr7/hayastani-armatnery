@@ -79,3 +79,21 @@ alter table public.shop_orders enable row level security;
 create policy "anyone can record shop orders"
   on public.shop_orders for insert
   with check (true);
+
+-- PIN-gated bus reset: deletes every booking so all seats show free again.
+-- RLS blocks direct deletes with the anon key, so the admin panel calls this
+-- function instead; it verifies the staff PIN server-side.
+create or replace function public.reset_bus_bookings(pin text)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  if pin is distinct from '2011RLOHN' then
+    raise exception 'wrong pin';
+  end if;
+  delete from public.bookings;
+end;
+$$;
+
+grant execute on function public.reset_bus_bookings(text) to anon, authenticated;

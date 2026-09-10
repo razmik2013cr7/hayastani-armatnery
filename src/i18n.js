@@ -180,6 +180,9 @@ export const translations = {
       saved: 'Տուրը ավելացվեց',
       deleted: 'Տուրը ջնջվեց',
       failed: 'Չհաջողվեց պահպանել',
+      cleanBus: 'Մաքրել ավտոբուսը',
+      confirmClean: 'Ջնջվելու են բոլոր զբաղված տեղերի ամրագրումները՝ ամբողջ ավտոբուսը դառնում է ազատ։',
+      busCleaned: 'Ավտոբուսը մաքրվեց',
       pick: 'Ընտրեք ջնջելու տուրը',
     },
     silver: {
@@ -391,6 +394,9 @@ export const translations = {
       saved: 'Tour added',
       deleted: 'Tour deleted',
       failed: 'Could not save',
+      cleanBus: 'Clean the bus',
+      confirmClean: 'All seat bookings will be deleted — the whole bus becomes free.',
+      busCleaned: 'The bus is clean',
       pick: 'Pick the tour to delete',
     },
     silver: {
@@ -602,6 +608,9 @@ export const translations = {
       deleted: 'Тур удалён',
       failed: 'Не удалось сохранить',
       pick: 'Выберите тур для удаления',
+      cleanBus: 'Очистить автобус',
+      confirmClean: 'Все бронирования мест будут удалены — автобус станет полностью свободным.',
+      busCleaned: 'Автобус очищен',
     },
     silver: {
       title: 'Серебряные монеты',
