@@ -306,7 +306,8 @@ function StepSeats({ tour, seat, setSeat, onBack, onFinish, t }) {
         }}
         aria-label={`${takenSeat ? t.checkout.seatLegendTaken : t.checkout.seatLegendFree}: ${id}`}
       >
-        {id}
+        {/* ✕ marks a taken seat; entering the staff PIN reveals its owner. */}
+        {takenSeat ? '✕' : id}
       </button>
     )
   }
@@ -388,7 +389,7 @@ function Ticket({ tour, days, options, seat, card, method, tourType, total, onCl
           <img className="ticket-logo" src={ticketLogo} alt="Ticket logo" />
           <div>
             <div className="t-tour">{info.title}</div>
-            <div className="t-sub">Հայաստանի Արմատները</div>
+            <div className="t-sub">Հավերժաքան Հայրենիք</div>
           </div>
         </div>
         <div className="ticket-lower">

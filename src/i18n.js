@@ -20,7 +20,7 @@ export const translations = {
       details: 'Տեսնել ավելին',
     },
     tours: {
-      brand: 'Հայաստանի Արմատները',
+      brand: 'Հավերժաքան Հայրենիք',
       gyumri: {
         title: 'Գյումրի — քաղաքի ոգին',
         description:
@@ -45,12 +45,34 @@ export const translations = {
           'Եռօրյա հանգստային տուր դեպի Հայաստանի մարգարիտը՝ Սևանա լիճ։ Կայցելենք Սևանավանքին, լողալ կամ զբոսնել ափին և համտեսել թարմ իշխան։',
         duration: '3 օր',
       },
+      jermuk: {
+        title: 'Ջերմուկ — ջրերի և ձորերի քաղաքը',
+        description:
+          'Եռօրյա առողջարանային տուր դեպի Ջերմուկ՝ հանքային ջրերի քաղաք։ Կտեսնենք «Ջրահարս» ջրվեժը, Զարգարիարտի կախովի ուղին և կհանգստանանք ջերմ ավազաններում։',
+        duration: '3 օր',
+      },
+      tbilisi: {
+        title: 'Թբիլիսի — հարևան մայրաքաղաքը',
+        description:
+          'Հնգօրյա ճամփորդություն դեպի Վրաստանի մայրաքաղաք։ Կքայլենք Հին Թբիլիսիում, կբարձրանանք Նարիկալա ամրոց և կմատուցենք վրացական խոհանոցի լավագույն ուտեստները։',
+        duration: '5 օր',
+      },
       syuniq: {
         title: 'Սյունիք — Արարատից մինչև Մեղրի',
         description:
           'Յոթօրյա էքսկուրսիա Հայաստանի հարավով։ Կտեսնենք Արենու գինետները, Նորավանքի ու Ամաղու Նորավանքի համալիրները, Մեղրիի ամրոցը և կվայելենք Արաքսի ձորի համայնապատկերները։',
         duration: '7 օր',
       },
+      georgia: {
+        title: 'Վրաստան — Խաղաղության վայրի ճամփորդություն',
+        description:
+          'Յոթօրյա միջազգային տուր Վրաստանով՝ Թբիլիսի, Մցխեթ, Քարթլի և Կախեթի գինետներ։ Լավագույն ելքը՝ երկշաբաթյա արձակուրդի համար։',
+        duration: '7 օր',
+      },
+    },
+    regions: {
+      home: 'Հայկական',
+      abroad: 'Արտասահմանյան',
     },
     modal: {
       close: 'Փակել',
@@ -87,7 +109,7 @@ export const translations = {
       phone: 'Հեռախոսահամար',
       phoneHint: 'Ձեր հաշիվը կգանձվի այս համարից',
       selectClass: 'Տուրի տեսակը',
-      group: 'Ընդհանուր տուր',
+      group: 'Խմբային տուր',
       personal: 'Անձնական տուր',
       selectSeat: 'Ընտրեք ձեր տեղը ավտոբուսում',
       pinTitle: 'Այս տեղը զբաղված է',
@@ -130,7 +152,27 @@ export const translations = {
       usePinInstead: 'Մուտքագրել PIN',
       pinTitle: 'PIN կոդ',
       pinLabel: 'PIN կոդը',
-      pinHint: 'PIN-ը բացում է գնումները առանց հաշվի',
+      pinHint: 'Մուտքագրեք PIN-ը',
+    },
+    admin: {
+      addTour: '+ Ավելացնել տուր',
+      deleteTour: 'Ջնջել տուր',
+      pinTitle: 'Մուտքագրեք PIN-ը',
+      name: 'Տուրի անունը',
+      desc: 'Նկարագրություն',
+      category: 'Խումբ',
+      home: 'Հայկական',
+      abroad: 'Արտասահմանյան',
+      days: 'Օրեր',
+      price: 'Գին (֏)',
+      image: 'Նկարի հղումը (URL)',
+      imageHint: 'Դատարկ թողեք՝ լռելյայն նկարի համար',
+      save: 'Պահպանել',
+      cancel: 'Չեղարկել',
+      saved: 'Տուրը ավելացվեց',
+      deleted: 'Տուրը ջնջվեց',
+      failed: 'Չհաջողվեց պահպանել',
+      pick: 'Ընտրեք ջնջելու տուրը',
     },
     silver: {
       title: 'Արծաթե մետաղադրամներ',
@@ -147,7 +189,7 @@ export const translations = {
       needLoginHint: 'Մետաղադրամներ ստանալու համար մուտք գործեք կամ ստեղծեք հաշիվ',
       lockPin: 'Կողպել PIN-ը',
       pinGateTitle: 'Մուտքագրեք PIN-ը',
-      pinGateHint: 'Մուտքագրեք 2011 ծածկագիրը՝ մետաղադրամներ ստանալու համար',
+      pinGateHint: 'Մուտքագրեք PIN-ը',
       sentToComputer: '50 մետաղադրամ ուղարկվեց ձեր համակարգչին',
       remoteClaimed: 'մետաղադրամ ստացվեց QR-ով',
       signIn: 'Մուտք',
@@ -166,6 +208,7 @@ export const translations = {
         mug: 'Բաժակ',
         pen: 'Գրիչ',
         phoneCase: 'Հեռախոսի պատյան',
+        termoMug: 'Թերմո բաժակ',
         summerHat: 'Ամառային գլխարկ',
         winterHat: 'Ձմեռային գլխարկ',
         hoodie: 'Հուդի',
@@ -187,7 +230,7 @@ export const translations = {
       details: 'View details',
     },
     tours: {
-      brand: 'Roots of Armenia',
+      brand: 'Հավերժաքան Հայրենիք',
       gyumri: {
         title: 'Gyumri — Spirit of the City',
         description:
@@ -212,12 +255,28 @@ export const translations = {
           'A relaxing three-day tour to the pearl of Armenia — Lake Sevan. Visit Sevanavank Monastery, swim or walk along the shore and taste fresh trout (ishkhan).',
         duration: '3 days',
       },
-      syuniq: {
-        title: 'Syunik — From Ararat to Meghri',
+      jermuk: {
+        title: 'Jernuk — City of Waters and Gorges',
         description:
-          'A seven-day excursion across southern Armenia. Visit Areni wineries, Noravank and Amaghu complexes, Meghri fortress and enjoy panoramas of the Arax valley.',
+          'A three-day spa escape to Jermuk, the mineral-water town. See the Mermaid (Jrvej) waterfall, ride the ropeway and unwind in the warm thermal pools.',
+        duration: '3 days',
+      },
+      tbilisi: {
+        title: 'Tbilisi — the Neighboring Capital',
+        description:
+          'A five-day trip to the capital of Georgia. Wander Old Tbilisi, climb Narikala Fortress and enjoy the best of Georgian cuisine.',
+        duration: '5 days',
+      },
+      georgia: {
+        title: 'Georgia — a Week Next Door',
+        description:
+          'A seven-day journey through Georgia: Tbilisi, Mtskheta, Kazbegi and Kakheti wineries. The perfect short international break.',
         duration: '7 days',
       },
+    },
+    regions: {
+      home: 'Armenian',
+      abroad: 'International',
     },
     modal: {
       close: 'Close',
@@ -296,7 +355,27 @@ export const translations = {
       usePinInstead: 'Enter PIN instead',
       pinTitle: 'PIN code',
       pinLabel: 'PIN code',
-      pinHint: 'The PIN unlocks purchases without an account',
+      pinHint: 'Enter the PIN',
+    },
+    admin: {
+      addTour: '+ Add a tour',
+      deleteTour: 'Delete a tour',
+      pinTitle: 'Enter the PIN',
+      name: 'Tour name',
+      desc: 'Description',
+      category: 'Group',
+      home: 'Armenian',
+      abroad: 'International',
+      days: 'Days',
+      price: 'Price (AMD)',
+      image: 'Image URL',
+      imageHint: 'Leave empty for a default image',
+      save: 'Save',
+      cancel: 'Cancel',
+      saved: 'Tour added',
+      deleted: 'Tour deleted',
+      failed: 'Could not save',
+      pick: 'Pick the tour to delete',
     },
     silver: {
       title: 'Silver coins',
@@ -313,7 +392,7 @@ export const translations = {
       needLoginHint: 'Sign in or create an account to collect coins',
       lockPin: 'Lock PIN',
       pinGateTitle: 'Enter the PIN',
-      pinGateHint: 'Enter the 2011 code to collect your coins',
+      pinGateHint: 'Enter the PIN',
       sentToComputer: '50 coins were sent to your computer',
       remoteClaimed: 'coins received via QR',
       signIn: 'Sign in',
@@ -332,6 +411,7 @@ export const translations = {
         mug: 'Mug',
         pen: 'Pen',
         phoneCase: 'Phone case',
+        termoMug: 'Termo mug',
         summerHat: 'Summer hat',
         winterHat: 'Winter hat',
         hoodie: 'Hoodie',
@@ -353,7 +433,7 @@ export const translations = {
       details: 'Подробнее',
     },
     tours: {
-      brand: 'Корни Армении',
+      brand: 'Հավերժաքան Հայրենիք',
       gyumri: {
         title: 'Гюмри — дух города',
         description:
@@ -378,12 +458,28 @@ export const translations = {
           'Трёхдневный тур отдыха к жемчужине Армении — озеру Севан. Посетим монастырь Севанаванк, искупаемся или прогуляемся по берегу и попробуем свежую форель (ишхан).',
         duration: '3 дня',
       },
-      syuniq: {
-        title: 'Сюник — от Арарата до Мегри',
+      jermuk: {
+        title: 'Джермук — город вод и ущелий',
         description:
-          'Семидневная экскурсия по югу Армении. Посетим винодельни Арени, комплексы Нораванк и Амагу, крепость Мегри и полюбуемся панорамами долины Аракса.',
+          'Трёхдневный санаторный тур в Джермук — город минеральных вод. Увидим водопад «Русалка», прокатимся на канатной дороге и отдохнём в тёплых термальных бассейнах.',
+        duration: '3 дня',
+      },
+      tbilisi: {
+        title: 'Тбилиси — соседняя столица',
+        description:
+          'Пятидневная поездка в столицу Грузии. Прогуляемся по Старому Тбилиси, поднимемся в крепость Нарикала и попробуем лучшие блюда грузинской кухни.',
+        duration: '5 дней',
+      },
+      georgia: {
+        title: 'Грузия — неделя по соседству',
+        description:
+          'Семидневное путешествие по Грузии: Тбилиси, Мцхета, Казбеги и винодельни Кахетии. Идеальный короткий международный отдых.',
         duration: '7 дней',
       },
+    },
+    regions: {
+      home: 'Армянские',
+      abroad: 'Зарубежные',
     },
     modal: {
       close: 'Закрыть',
@@ -461,7 +557,27 @@ export const translations = {
       usePinInstead: 'Ввести PIN',
       pinTitle: 'PIN-код',
       pinLabel: 'PIN-код',
-      pinHint: 'PIN открывает покупки без аккаунта',
+      pinHint: 'Введите PIN',
+    },
+    admin: {
+      addTour: '+ Добавить тур',
+      deleteTour: 'Удалить тур',
+      pinTitle: 'Введите PIN',
+      name: 'Название тура',
+      desc: 'Описание',
+      category: 'Группа',
+      home: 'Армянские',
+      abroad: 'Зарубежные',
+      days: 'Дни',
+      price: 'Цена (AMD)',
+      image: 'Ссылка на изображение (URL)',
+      imageHint: 'Оставьте пустым для стандартной картинки',
+      save: 'Сохранить',
+      cancel: 'Отмена',
+      saved: 'Тур добавлен',
+      deleted: 'Тур удалён',
+      failed: 'Не удалось сохранить',
+      pick: 'Выберите тур для удаления',
     },
     silver: {
       title: 'Серебряные монеты',
@@ -478,7 +594,7 @@ export const translations = {
       needLoginHint: 'Войдите или создайте аккаунт, чтобы получать монеты',
       lockPin: 'Заблокировать PIN',
       pinGateTitle: 'Введите PIN',
-      pinGateHint: 'Введите код 2011, чтобы получить монеты',
+      pinGateHint: 'Введите PIN',
       sentToComputer: '50 монет отправлено на ваш компьютер',
       remoteClaimed: 'монет получено по QR',
       signIn: 'Вход',
@@ -497,6 +613,7 @@ export const translations = {
         mug: 'Кружка',
         pen: 'Ручка',
         phoneCase: 'Чехол для телефона',
+        termoMug: 'Термокружка',
         summerHat: 'Летняя шляпа',
         winterHat: 'Зимняя шляпа',
         hoodie: 'Худи',

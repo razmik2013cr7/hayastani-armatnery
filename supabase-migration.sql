@@ -20,8 +20,62 @@ create policy "anyone can view bookings"
   on public.bookings for select
   using (true);
 
+-- One-time wipe: the bus starts COMPLETELY empty — nobody has bought seats.
+delete from public.bookings;
+
 -- Silver coins balance for the QR reward page.
 alter table public.profiles add column if not exists silver_coins int not null default 0;
 
 -- QR coin claims are relayed over Supabase Realtime **broadcast** —
 -- no database table is needed for them.
+
+-- ============================================================
+-- Admin-managed tours (created/deleted through the PIN-gated panel).
+-- ============================================================
+create table if not exists public.tours (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  region text not null default 'home' check (region in ('home', 'abroad')),
+  days int not null default 3,
+  price numeric not null default 0,
+  image_url text,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table public.tours enable row level security;
+
+create policy "anyone can view tours"
+  on public.tours for select
+  using (true);
+
+create policy "anyone can create tours"
+  on public.tours for insert
+  with check (true);
+
+create policy "anyone can delete tours"
+  on public.tours for delete
+  using (true);
+
+-- ============================================================
+-- Shop purchase audit log.
+-- Each purchase is recorded here. The owner email
+-- (rafikmkrtchyan25@gmail.com) is sent directly from the app via
+-- FormSubmit — no Edge Function needed.
+-- ============================================================
+create table if not exists public.shop_orders (
+  id uuid primary key default gen_random_uuid(),
+  item_id text,
+  item_name text not null,
+  price_coins int not null default 0,
+  buyer_email text,
+  buyer_name text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.shop_orders enable row level security;
+
+create policy "anyone can record shop orders"
+  on public.shop_orders for insert
+  with check (true);

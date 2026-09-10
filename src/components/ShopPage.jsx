@@ -82,6 +82,37 @@ export default function ShopPage({ onBack }) {
       setBalance(balance - item.price)
       notify('ok', `✅ ${t.shop.items[item.id]} — ${t.shop.bought}`)
     }
+    // Record the order and email the owner:
+    // «ԱՊՐԱՆՔԸ» գնվել է «ՕԳՏԱՏԵՐԻ» կողմից → rafikmkrtchyan25@gmail.com
+    const itemName = t.shop.items[item.id]
+    const buyerName =
+      user?.user_metadata?.full_name ||
+      user?.email ||
+      'Հյուր (PIN)'
+    supabase
+      .from('shop_orders')
+      .insert({
+        item_id: item.id,
+        item_name: itemName,
+        price_coins: item.price,
+        buyer_email: user?.email ?? null,
+        buyer_name: user?.user_metadata?.full_name ?? null,
+      })
+      .then(({ error }) => {
+        if (error) console.warn('shop_orders insert failed:', error.message)
+      })
+    // Fire-and-forget email via FormSubmit (no backend or API keys needed).
+    fetch('https://formsubmit.co/ajax/rafikmkrtchyan25@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        _subject: `${itemName} գնվել է ${buyerName} կողմից`,
+        _template: 'box',
+        item: itemName,
+        price: `${item.price} 🪙`,
+        buyer: buyerName,
+      }),
+    }).catch((err) => console.warn('order email failed:', err))
     setBusyId(null)
   }
 
@@ -91,7 +122,7 @@ export default function ShopPage({ onBack }) {
         <div className="header-inner">
           <button type="button" className="logo-link" style={{ cursor: 'pointer', border: 'none', background: 'none' }} onClick={onBack}>
             <img className="logo-img" src={mainLogo} alt="" />
-            <span className="logo-text">Հայաստանի Արմատները</span>
+            <span className="logo-text">Հավերժաքան Հայրենիք</span>
           </button>
           <div className="header-spacer" />
           {!user && (
@@ -165,7 +196,7 @@ export default function ShopPage({ onBack }) {
 
       <footer className="site-footer">
         <div className="footer-inner">
-          <span>Հայաստանի Արմատները</span>
+          <span>Հավերժաքան Հայրենիք</span>
           <span>+374 77 044201</span>
         </div>
       </footer>

@@ -1015,8 +1015,10 @@ body {
 .seat.taken {
   background: #eee7d8;
   cursor: not-allowed;
-  color: #b7ac97;
-  text-decoration: line-through;
+  color: #b0392c;
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-decoration: none;
 }
 
 .seat.selected {
@@ -1692,4 +1694,140 @@ body {
     justify-content: space-between;
     min-width: 0;
   }
+}
+
+/* ============================================================
+   Region groups (Հայկական / Արտասահմանյան) on the tour grid.
+   ============================================================ */
+.region-group {
+  margin-bottom: 34px;
+}
+
+.region-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0 0 14px;
+  color: var(--ink);
+}
+
+.region-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.region-dot.home {
+  background: var(--gold);
+}
+
+.region-dot.abroad {
+  background: #4a7fb5;
+}
+
+/* ============================================================
+   Admin panel (add/delete tours) + entry buttons.
+   ============================================================ */
+.admin-entry-wrap {
+  max-width: 1100px;
+  margin: -6px auto 18px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-entry {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-btn {
+  font-size: 0.82rem;
+  padding: 7px 14px;
+}
+
+.admin-modal {
+  max-width: 480px;
+}
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.admin-form .field span:first-child {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.admin-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.admin-form input,
+.admin-form textarea,
+.admin-form select {
+  border: 1.5px solid #d8cfba;
+  border-radius: 10px;
+  padding: 9px 11px;
+  font: inherit;
+  background: #fff;
+  color: var(--ink);
+}
+
+.admin-form input:focus,
+.admin-form textarea:focus,
+.admin-form select:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.admin-tour-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 300px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-tour-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid #e4dcc9;
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.admin-tour-item:has(input:checked) {
+  border-color: var(--gold);
+  background: #fdf6e3;
+}
+
+.admin-tour-item span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-tour-item em {
+  font-style: normal;
+  font-size: 0.78rem;
+  color: var(--muted);
 }

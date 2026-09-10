@@ -4,20 +4,24 @@ import { useEffect, useState } from 'react'
 // Two scopes:
 //   • shop   — buying tickets and store items (PIN: STAFF_PIN, e.g. 2011RLOHN)
 //   • rewards — the QR silver-coins page (PIN: REWARD_PIN, 2011)
-// Unlocks persist on the device until locked again.
-const PREFIX = 'pin_ok_'
+// Unlocks are PER-VISIT: nothing is persisted, so the PIN must be entered
+// again every time the page is (re)opened.
 const COINS_KEY = 'guest_silver_coins'
 const EVT = 'pinaccess'
 
-export const isPinUnlocked = (scope) => localStorage.getItem(PREFIX + scope) === '1'
+// In-memory unlock map — resets on every full page load, which is exactly
+// the "enter the PIN each time" behavior.
+const unlockedScopes = new Set()
+
+export const isPinUnlocked = (scope) => unlockedScopes.has(scope)
 
 export function unlockPin(scope) {
-  localStorage.setItem(PREFIX + scope, '1')
+  unlockedScopes.add(scope)
   window.dispatchEvent(new Event(EVT))
 }
 
 export function lockPin(scope) {
-  localStorage.removeItem(PREFIX + scope)
+  unlockedScopes.delete(scope)
   window.dispatchEvent(new Event(EVT))
 }
 

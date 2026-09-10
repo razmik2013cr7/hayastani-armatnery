@@ -21,7 +21,10 @@ export default function TourModal({ tour, onClose, onBuy, t }) {
     }
   }, [onClose])
 
-  const info = t.tours[tour.id]
+  // DB-created tours carry their own title/description; built-ins use i18n.
+  const info = tour.title
+    ? { title: tour.title, description: tour.description, duration: `${tour.days} ${t.checkout.daysWord}` }
+    : t.tours[tour.id]
 
   return (
     <div className="modal-overlay" onClick={onClose}>

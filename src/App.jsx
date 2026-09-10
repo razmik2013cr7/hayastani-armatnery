@@ -9,6 +9,7 @@ import Checkout from './components/Checkout.jsx'
 import SilverPage from './components/SilverPage.jsx'
 import ShopPage from './components/ShopPage.jsx'
 import QrClaimListener from './components/QrClaimListener.jsx'
+import { AdminEntry } from './components/AdminPanel.jsx'
 import { CATEGORIES, SITE_URL } from './data.js'
 import { getSessionId } from './pinAccess.js'
 import { AuthProvider } from './AuthContext.jsx'
@@ -17,7 +18,8 @@ import mainLogo from './assets/main-logo.jpeg'
 
 export default function App() {
   const [lang, setLang] = useState('hy')
-  const [category, setCategory] = useState('all')
+  // Day categories only (3/5/7) — the “all” option was removed.
+  const [category, setCategory] = useState('3')
   const [selectedTour, setSelectedTour] = useState(null)
   const [checkoutTour, setCheckoutTour] = useState(null)
   const [route, setRoute] = useState(() => window.location.hash)
@@ -48,15 +50,15 @@ export default function App() {
   const hero = useMemo(() => {
     const copy = {
       hy: {
-        title: 'Բացահայտիր Հայաստանի արմատները',
+        title: 'Բացահայտիր Հավերժական Հայրենիքը',
         sub: 'Ավտոբուսային տուրեր ամբողջ Հայաստանով — ընտրիր, ամրագրիր և պատրաստվիր ճամփորդության։',
       },
       en: {
-        title: 'Discover the Roots of Armenia',
+        title: 'Discover the Eternal Homeland',
         sub: 'Bus tours across Armenia — choose a tour, grab your ticket and get ready for the journey.',
       },
       ru: {
-        title: 'Открой корни Армении',
+        title: 'Открой вечную Родину',
         sub: 'Автобусные туры по всей Армении — выбери тур, купи билет и готовься к путешествию.',
       },
     }
@@ -79,7 +81,7 @@ export default function App() {
     )
   }
 
-  // Day count derived from the selected navbar category (null = all).
+  // Day count derived from the selected navbar category.
   const days = CATEGORIES.find((c) => c.id === category)?.days ?? null
 
   return (
@@ -96,6 +98,10 @@ export default function App() {
         </div>
       </section>
 
+      <div className="admin-entry-wrap">
+        <AdminEntry t={t} />
+      </div>
+
       <main style={{ flex: 1 }}>
         <TourGrid days={days} onOpen={setSelectedTour} t={t} />
       </main>
@@ -104,7 +110,7 @@ export default function App() {
         <div className="footer-inner">
           <strong style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <img src={mainLogo} alt="" width="26" height="26" style={{ borderRadius: 6, objectFit: 'cover' }} />
-            Հայաստանի Արմատները
+            Հավերժաքան Հայրենիք
           </strong>
           <span>+374 77 044201</span>
           {qrDataUrl && (

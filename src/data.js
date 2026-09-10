@@ -3,6 +3,7 @@ import shopNotebookPen from './assets/shop-notebook-pen.jpeg'
 import shopMug from './assets/shop-mug.jpeg'
 import shopPen from './assets/shop-pen.jpeg'
 import shopPhoneCase from './assets/shop-phone-case.jpeg'
+import shopTermoMug from './assets/shop-termo-mug.jpeg'
 import shopSummerHat from './assets/shop-summer-hat.jpeg'
 import shopWinterHat from './assets/shop-winter-hat.jpeg'
 import shopHoodie from './assets/shop-hoodie.jpeg'
@@ -12,20 +13,24 @@ import shopHoodie from './assets/shop-hoodie.jpeg'
 // SSO login wall, so the QR must always encode this clean production domain.
 export const SITE_URL = 'https://hayastani-armatnery.vercel.app'
 
+// Day categories — no "all" option; every group shows Հայկական + Արտասահմանյան.
 export const CATEGORIES = [
-  { id: 'all', labelKey: 'nav.all', days: null },
   { id: '3', labelKey: 'nav.three', days: 3 },
   { id: '5', labelKey: 'nav.five', days: 5 },
   { id: '7', labelKey: 'nav.seven', days: 7 },
 ]
 
 // Prices are for the whole tour (per booking, in AMD).
+// home: true → Հայկական group, home: false → Արտասահմանյան group.
 export const TOURS = [
-  { id: 'gyumri', image: '/tour-gyumri.svg', price: 15000, days: 3 },
-  { id: 'dilijan', image: '/tour-dilijan.svg', price: 12000, days: 3 },
-  { id: 'goris', image: '/tour-goris.svg', price: 18000, days: 5 },
-  { id: 'sevan', image: '/tour-sevan.svg', price: 9000, days: 3 },
-  { id: 'syuniq', image: '/tour-syuniq.svg', price: 22000, days: 7 },
+  { id: 'gyumri', image: '/tour-gyumri.svg', price: 15000, days: 3, home: true },
+  { id: 'dilijan', image: '/tour-dilijan.svg', price: 12000, days: 3, home: true },
+  { id: 'jermuk', image: '/tour-jermuk.svg', price: 10000, days: 3, home: false },
+  { id: 'goris', image: '/tour-goris.svg', price: 18000, days: 5, home: true },
+  { id: 'tbilisi', image: '/tour-tbilisi.svg', price: 14000, days: 5, home: false },
+  { id: 'sevan', image: '/tour-sevan.svg', price: 9000, days: 3, home: true },
+  { id: 'syuniq', image: '/tour-syuniq.svg', price: 22000, days: 7, home: true },
+  { id: 'georgia', image: '/tour-georgia.svg', price: 26000, days: 7, home: false },
 ]
 
 // Step-1 add-ons — each shows its price next to the Yes/No toggle.
@@ -63,7 +68,8 @@ export const BUS_SEAT_ROWS = (() => {
 
 export const BUS_SEATS = BUS_SEAT_ROWS.flat()
 
-export const TAKEN_SEATS = ['3A', '3B', '7C', '7D', '9A'] // demo fallback when the DB is unreachable
+// The bus starts fully empty — seats are only taken by real bookings.
+export const TAKEN_SEATS = []
 
 // Staff PIN — unlocks buying (store + tours) without an account, and
 // reveals who booked a taken seat on the bus map.
@@ -86,6 +92,7 @@ export const SHOP_ITEMS = [
   { id: 'mug', image: shopMug, price: 500 },
   { id: 'pen', image: shopPen, price: 120 },
   { id: 'phoneCase', image: shopPhoneCase, price: 300 },
+  { id: 'termoMug', image: shopTermoMug, price: 1500 },
   { id: 'summerHat', image: shopSummerHat, price: 500 },
   { id: 'winterHat', image: shopWinterHat, price: 700 },
   { id: 'hoodie', image: shopHoodie, price: 2000 },
