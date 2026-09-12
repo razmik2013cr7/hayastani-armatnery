@@ -57,7 +57,13 @@ export const EXTRAS = [
     plansI18n: 'foodPlans',
     plans: [{ id: 'f1' }, { id: 'f2' }],
   },
-  { key: 'cottage', icon: '🏡', price: 25000 },
+  {
+    key: 'cottage',
+    icon: '🏡',
+    price: 25000,
+    plansI18n: 'cottagePlans',
+    plans: [{ id: 'c1' }, { id: 'c2' }, { id: 'c3' }],
+  },
 ]
 
 // Step-2 choice: only personal (private) tours are offered — the group

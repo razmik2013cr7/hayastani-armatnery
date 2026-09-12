@@ -118,6 +118,12 @@ export const translations = {
         f1: 'Սնունդ օրական 1 անգամ',
         f2: 'Սնունդ օրական 3 անգամ',
       },
+      cottagePlansTitle: 'Ընտրեք քոտեջի տեսակը',
+      cottagePlans: {
+        c1: '1-3 հոգանոց',
+        c2: '3-5 հոգանոց',
+        c3: 'Լյուքս',
+      },
       photoPlans: {
         p1: '1 Մշակված նկար և 5 չմշակված',
         p2: 'Նվեր երեխային՝ 2 մշակված նկար',
@@ -369,6 +375,12 @@ export const translations = {
         f1: 'Food 1 time a day',
         f2: 'Food 3 times a day',
       },
+      cottagePlansTitle: 'Choose a cottage type',
+      cottagePlans: {
+        c1: 'For 1–3 people',
+        c2: 'For 3–5 people',
+        c3: 'Lux',
+      },
       photoPlans: {
         p1: '1 edited photo and 5 unedited',
         p2: 'A gift for the child — 2 edited photos',
@@ -618,6 +630,12 @@ export const translations = {
       foodPlans: {
         f1: 'Питание 1 раз в день',
         f2: 'Питание 3 раза в день',
+      },
+      cottagePlansTitle: 'Выберите тип коттеджа',
+      cottagePlans: {
+        c1: 'На 1–3 человека',
+        c2: 'На 3–5 человек',
+        c3: 'Люкс',
       },
       photoPlans: {
         p1: '1 обработанное фото и 5 необработанных',

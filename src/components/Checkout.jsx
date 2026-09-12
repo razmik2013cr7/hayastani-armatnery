@@ -44,7 +44,13 @@ function OptionRow({ icon, label, price, info, plans, plansI18n, plan, setPlan, 
           <p className="opt-info">{info}</p>
           {plans && value && (
             <div className="plan-picker">
-              <div className="plan-picker-label">{plansI18n === 'foodPlans' ? t.checkout.foodPlansTitle : t.checkout.photoPlansTitle}</div>
+              <div className="plan-picker-label">
+                {plansI18n === 'photoPlans'
+                  ? t.checkout.photoPlansTitle
+                  : plansI18n === 'foodPlans'
+                    ? t.checkout.foodPlansTitle
+                    : t.checkout.cottagePlansTitle}
+              </div>
               <div className="plan-opts">
                 {plans.map((p) => (
                   <button
@@ -539,7 +545,9 @@ function Ticket({ tour, days, options, planChoices, seat, card, method, school, 
             </div>
             <div className="t-field">
               <div className="t-label">{t.checkout.cottage}</div>
-              <div className="t-value">{options.cottage ? t.checkout.included : t.checkout.notIncluded}</div>
+              <div className="t-value">
+                {options.cottage ? t.checkout.cottagePlans[planChoices.cottage] : t.checkout.notIncluded}
+              </div>
             </div>
             <div className="t-field">
               <div className="t-label">{t.checkout.selectPayment}</div>
@@ -615,7 +623,7 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
   const [options, setOptions] = useState({ photoshoot: false, food: false, cottage: false })
   // Which package was chosen inside each extra's menu (photoshoot plans,
   // food plans). Defaults to each extra's first plan.
-  const [planChoices, setPlanChoices] = useState({ photoshoot: 'p1', food: 'f1' })
+  const [planChoices, setPlanChoices] = useState({ photoshoot: 'p1', food: 'f1', cottage: 'c1' })
   const [method, setMethod] = useState(null)
   const [card, setCard] = useState({ number: '', name: '', expiry: '', cvc: '', phone: '' })
   // School-payment details, filled when the «Դպրոց» method is chosen.
@@ -774,6 +782,7 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
                     food: options.food,
                     food_plan: options.food ? planChoices.food : null,
                     cottage: options.cottage,
+                    cottage_plan: options.cottage ? planChoices.cottage : null,
                     payment_method: method?.id ?? null,
                     total_amd: total,
                     card_last4: card.number.replace(/\D/g, '').slice(-4) || null,
@@ -781,8 +790,8 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
                   let res = await supabase.from('bookings').insert(booking)
                   // Older schema without the plan columns: retry without them
                   // so the booking itself is never lost.
-                  if (res.error && /(photo_plan|food_plan)/i.test(res.error.message || '')) {
-                    const { photo_plan, food_plan, ...rest } = booking
+                  if (res.error && /(photo_plan|food_plan|cottage_plan)/i.test(res.error.message || '')) {
+                    const { photo_plan, food_plan, cottage_plan, ...rest } = booking
                     res = await supabase.from('bookings').insert(rest)
                   }
                 } catch (err) {
