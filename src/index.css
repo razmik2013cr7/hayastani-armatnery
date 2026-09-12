@@ -1957,3 +1957,74 @@ body {
   font-size: 0.75rem;
   color: var(--muted);
 }
+
+/* ---------- Checkout option cards (tap to open a detail menu) ---------- */
+.option-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.option-card.chosen {
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px rgba(200, 16, 46, 0.12);
+}
+.option-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+.option-head:hover { background: rgba(0, 0, 0, 0.02); }
+.option-head .opt-icon { font-size: 1.3rem; flex-shrink: 0; }
+.option-head .option-name { font-weight: 700; flex: 1; }
+.opt-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted, #777);
+  background: #f6f6f6;
+  white-space: nowrap;
+}
+.opt-badge.on {
+  color: #fff;
+  background: var(--red);
+  border-color: var(--red);
+}
+.opt-chevron { color: var(--muted, #777); flex-shrink: 0; }
+.opt-price.depart-addr {
+  margin-left: 0;
+  font-weight: 600;
+  color: var(--text, #222);
+  background: none;
+  border: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.option-menu {
+  padding: 0 16px 14px;
+  border-top: 1px dashed var(--line);
+}
+.opt-info {
+  margin: 12px 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--muted, #555);
+}
+.opt-choose {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.opt-choose-label { font-weight: 700; font-size: 0.92rem; }

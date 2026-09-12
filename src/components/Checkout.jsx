@@ -19,22 +19,65 @@ function formatExpiry(value) {
   return `${digits.slice(0, 2)}/${digits.slice(2)}`
 }
 
-function OptionRow({ icon, label, price, value, onChange, t }) {
+function OptionRow({ icon, label, price, info, value, onChange, t }) {
+  const [open, setOpen] = useState(false)
   return (
-    <div className="option-row">
-      <span className="option-name">
+    <div className={`option-card${value ? ' chosen' : ''}`}>
+      <button
+        type="button"
+        className="option-head"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
         <span className="opt-icon" aria-hidden="true">{icon}</span>
-        {label}
+        <span className="option-name">{label}</span>
         <span className="opt-price">+{fmt.format(price)} ֏</span>
-      </span>
-      <span className="segmented" role="group" aria-label={label}>
-        <button type="button" className={`seg-btn${value ? ' active' : ''}`} onClick={() => onChange(true)}>
-          {t.checkout.yes}
-        </button>
-        <button type="button" className={`seg-btn${!value ? ' active' : ''}`} onClick={() => onChange(false)}>
-          {t.checkout.no}
-        </button>
-      </span>
+        <span className={`opt-badge${value ? ' on' : ''}`}>
+          {value ? t.checkout.included : t.checkout.notIncluded}
+        </span>
+        <span className="opt-chevron" aria-hidden="true">{open ? '▴' : '▾'}</span>
+      </button>
+      {open && (
+        <div className="option-menu">
+          <p className="opt-info">{info}</p>
+          <div className="opt-choose">
+            <span className="opt-choose-label">{t.checkout.addQuestion}</span>
+            <span className="segmented" role="group" aria-label={label}>
+              <button type="button" className={`seg-btn${value ? ' active' : ''}`} onClick={() => onChange(true)}>
+                {t.checkout.yes}
+              </button>
+              <button type="button" className={`seg-btn${!value ? ' active' : ''}`} onClick={() => onChange(false)}>
+                {t.checkout.no}
+              </button>
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DepartureCard({ t }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="option-card depart">
+      <button
+        type="button"
+        className="option-head"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        <span className="opt-icon" aria-hidden="true">📍</span>
+        <span className="option-name">{t.checkout.departure}</span>
+        <span className="opt-price depart-addr">{t.checkout.departureAddress}</span>
+        <span className="opt-chevron" aria-hidden="true">{open ? '▴' : '▾'}</span>
+      </button>
+      {open && (
+        <div className="option-menu">
+          <p className="opt-info">{t.checkout.departureDetails}</p>
+          <p className="opt-info">{t.checkout.departureHint}</p>
+        </div>
+      )}
     </div>
   )
 }
@@ -74,6 +117,7 @@ function StepOptions({ tour, options, setOptions, total, chooseDays, days, setDa
             icon={ex.icon}
             label={t.checkout[ex.key]}
             price={ex.price}
+            info={t.checkout.extrasInfo[ex.key]}
             value={options[ex.key]}
             onChange={(v) => setOptions((o) => ({ ...o, [ex.key]: v }))}
             t={t}
@@ -81,13 +125,7 @@ function StepOptions({ tour, options, setOptions, total, chooseDays, days, setDa
         ))}
       </div>
 
-      <div className="departure-box">
-        <div className="dep-label">{t.checkout.departure}</div>
-        <div className="dep-address">
-          <span aria-hidden="true">📍</span> {t.checkout.departureAddress}
-        </div>
-        <div className="t-sub" style={{ marginTop: 4 }}>{t.checkout.departureHint}</div>
-      </div>
+      <DepartureCard t={t} />
 
       <div className="total-bar">
         <span>{t.checkout.total}</span>
