@@ -440,7 +440,7 @@ function Ticket({ tour, days, options, seat, card, method, school, tourType, tot
           <img className="ticket-logo" src={ticketLogo} alt="Ticket logo" />
           <div>
             <div className="t-tour">{info.title}</div>
-            <div className="t-sub">Հավերժաքան Հայրենիք</div>
+            <div className="t-sub">Հավերժական Հայրենիք</div>
           </div>
         </div>
         <div className="ticket-lower">

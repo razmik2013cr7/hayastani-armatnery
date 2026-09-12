@@ -126,7 +126,7 @@ export default function ShopPage({ onBack }) {
         <div className="header-inner">
           <button type="button" className="logo-link" style={{ cursor: 'pointer', border: 'none', background: 'none' }} onClick={onBack}>
             <img className="logo-img" src={mainLogo} alt="" />
-            <span className="logo-text">Հավերժաքան Հայրենիք</span>
+            <span className="logo-text">Հավերժական Հայրենիք</span>
           </button>
           <div className="header-spacer" />
           {!user && (
@@ -200,7 +200,7 @@ export default function ShopPage({ onBack }) {
 
       <footer className="site-footer">
         <div className="footer-inner">
-          <span>Հավերժաքան Հայրենիք</span>
+          <span>Հավերժական Հայրենիք</span>
           <span>+374 77 044201</span>
         </div>
       </footer>

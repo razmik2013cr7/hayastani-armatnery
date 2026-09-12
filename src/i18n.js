@@ -20,7 +20,7 @@ export const translations = {
       details: 'Տեսնել ավելին',
     },
     tours: {
-      brand: 'Հավերժաքան Հայրենիք',
+      brand: 'Հավերժական Հայրենիք',
       gyumri: {
         title: 'Գյումրի — քաղաքի ոգին',
         description:
@@ -258,7 +258,7 @@ export const translations = {
       details: 'View details',
     },
     tours: {
-      brand: 'Հավերժաքան Հայրենիք',
+      brand: 'Հավերժական Հայրենիք',
       gyumri: {
         title: 'Gyumri — Spirit of the City',
         description:
@@ -489,7 +489,7 @@ export const translations = {
       details: 'Подробнее',
     },
     tours: {
-      brand: 'Հավերժաքան Հայրենիք',
+      brand: 'Հավերժական Հայրենիք',
       gyumri: {
         title: 'Гюмри — дух города',
         description:

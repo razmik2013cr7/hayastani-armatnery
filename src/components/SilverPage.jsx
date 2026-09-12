@@ -114,7 +114,7 @@ export default function SilverPage({ onBack }) {
         <div className="header-inner">
           <button type="button" className="logo-link" style={{ cursor: 'pointer', border: 'none', background: 'none' }} onClick={onBack}>
             <img className="logo-img" src={mainLogo} alt="" />
-            <span className="logo-text">Հավերժաքան Հայրենիք</span>
+            <span className="logo-text">Հավերժական Հայրենիք</span>
           </button>
           <div className="header-spacer" />
           <div className="lang-switch" role="group" aria-label="Language">

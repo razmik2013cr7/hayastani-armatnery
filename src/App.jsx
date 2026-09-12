@@ -112,7 +112,7 @@ export default function App() {
         <div className="footer-inner">
           <strong style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <img src={mainLogo} alt="" width="26" height="26" style={{ borderRadius: 6, objectFit: 'cover' }} />
-            Հավերժաքան Հայրենիք
+            Հավերժական Հայրենիք
           </strong>
           <span>+374 77 044201</span>
           {qrDataUrl && (

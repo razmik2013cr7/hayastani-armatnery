@@ -22,8 +22,8 @@ export default function Header({ lang, onLangChange, t }) {
     <header className="site-header">
       <div className="header-inner">
         <a className="logo-link" href="/" aria-label="Home">
-          <img className="logo-img" src={logo} alt="Հավերժաքան Հայրենիք logo" />
-          <span className="logo-text">Հավերժաքան Հայրենիք</span>
+          <img className="logo-img" src={logo} alt="Հավերժական Հայրենիք logo" />
+          <span className="logo-text">Հավերժական Հայրենիք</span>
         </a>
 
         <div className="header-spacer" />
