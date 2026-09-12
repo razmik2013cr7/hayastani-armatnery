@@ -53,15 +53,15 @@ export default function App() {
     const copy = {
       hy: {
         title: 'Բացահայտիր Հավերժական Հայրենիքը',
-        sub: 'Ավտոբուսային տուրեր ամբողջ Հայաստանով — ընտրիր, ամրագրիր և պատրաստվիր ճամփորդության։',
+        sub: 'Արմատներով ամուր, Գագաթներով վեհ',
       },
       en: {
         title: 'Discover the Eternal Homeland',
-        sub: 'Bus tours across Armenia — choose a tour, grab your ticket and get ready for the journey.',
+        sub: 'Strong in our roots, majestic on our peaks.',
       },
       ru: {
         title: 'Открой вечную Родину',
-        sub: 'Автобусные туры по всей Армении — выбери тур, купи билет и готовься к путешествию.',
+        sub: 'Крепки корнями, величественны вершинами.',
       },
     }
     return copy[lang]
