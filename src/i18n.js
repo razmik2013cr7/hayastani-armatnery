@@ -112,6 +112,12 @@ export const translations = {
       yes: 'Այո',
       no: 'Ոչ',
       addQuestion: 'Ավելացնե՞լ',
+      photoPlansTitle: 'Ընտրեք փաթեթը',
+      photoPlans: {
+        p1: '1 Մշակված նկար և 5 չմշակված',
+        p2: 'Նվեր երեխային՝ 2 մշակված նկար',
+        p3: '5 չմշակված նկար',
+      },
       extrasInfo: {
         photoshoot: 'Պրոֆեսիոնալ լուսակարիչ կուղեկցի ձեզ ամբողջ տուրի ընթացքում։ Կստանաք բոլոր լուսանկարները տուրից հետո։',
         food: 'Երեք անգամյա սնունդ օրական՝ հայկական ավանդական ուտեստներով։ Հաշվի է առնվում բուսակերների համար նախատեսված տարբերակը։',
@@ -351,6 +357,12 @@ export const translations = {
       yes: 'Yes',
       no: 'No',
       addQuestion: 'Add it?',
+      photoPlansTitle: 'Choose a package',
+      photoPlans: {
+        p1: '1 edited photo and 5 unedited',
+        p2: 'A gift for the child — 2 edited photos',
+        p3: '5 unedited photos',
+      },
       extrasInfo: {
         photoshoot: 'A professional photographer accompanies you throughout the tour. You receive all the photos after the trip.',
         food: 'Three meals a day featuring traditional Armenian dishes. A vegetarian option is available on request.',
@@ -589,6 +601,12 @@ export const translations = {
       yes: 'Да',
       no: 'Нет',
       addQuestion: 'Добавить?',
+      photoPlansTitle: 'Выберите пакет',
+      photoPlans: {
+        p1: '1 обработанное фото и 5 необработанных',
+        p2: 'Подарок ребёнку — 2 обработанных фото',
+        p3: '5 необработанных фото',
+      },
       extrasInfo: {
         photoshoot: 'Профессиональный фотограф сопровождает вас на протяжении всего тура. Все фотографии вы получите после поездки.',
         food: 'Трёхразовое питание с традиционными армянскими блюдами. Есть вегетарианский вариант по запросу.',

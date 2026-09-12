@@ -4,7 +4,7 @@
 --   2. Creates the reset_bus_bookings(pin) function used by the site's
 --      "🚌 Մաքրել ավտոբուսը" admin button, so future cleaning is one click.
 
-delete from public.bookings;
+delete from public.bookings where true;
 
 create or replace function public.reset_bus_bookings(pin text)
 returns void
@@ -15,7 +15,7 @@ begin
   if pin is distinct from '2011RLOHN' then
     raise exception 'wrong pin';
   end if;
-  delete from public.bookings;
+  delete from public.bookings where true;
 end;
 $$;
 

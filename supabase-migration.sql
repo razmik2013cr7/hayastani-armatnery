@@ -13,6 +13,8 @@ alter table public.bookings add column if not exists days int not null default 1
 alter table public.bookings add column if not exists tour_type text;
 alter table public.bookings add column if not exists payment_method text;
 alter table public.bookings add column if not exists buyer_name text;
+-- Chosen photo package when the photoshoot extra is included ('p1' | 'p2' | 'p3').
+alter table public.bookings add column if not exists photo_plan text;
 
 -- Bookings: let visitors see which seats are taken (the live seat map).
 drop policy if exists "anyone can view bookings" on public.bookings;
@@ -98,7 +100,7 @@ begin
   if pin is distinct from '2011RLOHN' then
     raise exception 'wrong pin';
   end if;
-  delete from public.bookings;
+  delete from public.bookings where true;
 end;
 $$;
 

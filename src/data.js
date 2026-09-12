@@ -35,7 +35,14 @@ export const TOURS = [
 
 // Step-1 add-ons — each shows its price next to the Yes/No toggle.
 export const EXTRAS = [
-  { key: 'photoshoot', icon: '📷', price: 15000 },
+  {
+    key: 'photoshoot',
+    icon: '📷',
+    price: 15000,
+    // Photo-package plans offered inside the photoshoot menu (labels in i18n:
+    // checkout.photoPlans). The first one is the default when included.
+    plans: ['p1', 'p2', 'p3'],
+  },
   { key: 'food', icon: '🍽️', price: 8000 },
   { key: 'cottage', icon: '🏡', price: 25000 },
 ]
