@@ -113,6 +113,11 @@ export const translations = {
       no: 'Ոչ',
       addQuestion: 'Ավելացնե՞լ',
       photoPlansTitle: 'Ընտրեք փաթեթը',
+      foodPlansTitle: 'Ընտրեք սննդի տարբերակը',
+      foodPlans: {
+        f1: 'Սնունդ օրական 1 անգամ',
+        f2: 'Սնունդ օրական 3 անգամ',
+      },
       photoPlans: {
         p1: '1 Մշակված նկար և 5 չմշակված',
         p2: 'Նվեր երեխային՝ 2 մշակված նկար',
@@ -359,6 +364,11 @@ export const translations = {
       no: 'No',
       addQuestion: 'Add it?',
       photoPlansTitle: 'Choose a package',
+      foodPlansTitle: 'Choose a meal option',
+      foodPlans: {
+        f1: 'Food 1 time a day',
+        f2: 'Food 3 times a day',
+      },
       photoPlans: {
         p1: '1 edited photo and 5 unedited',
         p2: 'A gift for the child — 2 edited photos',
@@ -604,6 +614,11 @@ export const translations = {
       no: 'Нет',
       addQuestion: 'Добавить?',
       photoPlansTitle: 'Выберите пакет',
+      foodPlansTitle: 'Выберите вариант питания',
+      foodPlans: {
+        f1: 'Питание 1 раз в день',
+        f2: 'Питание 3 раза в день',
+      },
       photoPlans: {
         p1: '1 обработанное фото и 5 необработанных',
         p2: 'Подарок ребёнку — 2 обработанных фото',

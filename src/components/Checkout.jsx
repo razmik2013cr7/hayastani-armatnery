@@ -19,7 +19,7 @@ function formatExpiry(value) {
   return `${digits.slice(0, 2)}/${digits.slice(2)}`
 }
 
-function OptionRow({ icon, label, price, info, plans, plan, setPlan, value, onChange, t }) {
+function OptionRow({ icon, label, price, info, plans, plansI18n, plan, setPlan, value, onChange, t }) {
   const [open, setOpen] = useState(false)
   // The card head shows the price of the chosen plan when it overrides the base.
   const activePrice = plans?.find((p) => p.id === plan)?.price ?? price
@@ -44,7 +44,7 @@ function OptionRow({ icon, label, price, info, plans, plan, setPlan, value, onCh
           <p className="opt-info">{info}</p>
           {plans && value && (
             <div className="plan-picker">
-              <div className="plan-picker-label">{t.checkout.photoPlansTitle}</div>
+              <div className="plan-picker-label">{plansI18n === 'foodPlans' ? t.checkout.foodPlansTitle : t.checkout.photoPlansTitle}</div>
               <div className="plan-opts">
                 {plans.map((p) => (
                   <button
@@ -53,7 +53,7 @@ function OptionRow({ icon, label, price, info, plans, plan, setPlan, value, onCh
                     className={`plan-opt${plan === p.id ? ' active' : ''}`}
                     onClick={() => setPlan(p.id)}
                   >
-                    <span>{t.checkout.photoPlans[p.id]}</span>
+                    <span>{t.checkout[plansI18n][p.id]}</span>
                     {p.price != null && (
                       <span className="plan-price">{fmt.format(p.price)} ֏</span>
                     )}
@@ -104,7 +104,7 @@ function DepartureCard({ t }) {
   )
 }
 
-function StepOptions({ tour, options, setOptions, photoPlan, setPhotoPlan, total, chooseDays, days, setDays, onNext, t }) {
+function StepOptions({ tour, options, setOptions, planChoices, setPlanChoices, total, chooseDays, days, setDays, onNext, t }) {
   return (
     <div>
       <h3>{t.checkout.step1}</h3>
@@ -141,8 +141,9 @@ function StepOptions({ tour, options, setOptions, photoPlan, setPhotoPlan, total
             price={ex.price}
             info={t.checkout.extrasInfo[ex.key]}
             plans={ex.plans}
-            plan={photoPlan}
-            setPlan={setPhotoPlan}
+            plansI18n={ex.plansI18n}
+            plan={planChoices[ex.key]}
+            setPlan={(id) => setPlanChoices((c) => ({ ...c, [ex.key]: id }))}
             value={options[ex.key]}
             onChange={(v) => setOptions((o) => ({ ...o, [ex.key]: v }))}
             t={t}
@@ -486,7 +487,7 @@ function StepSeats({ tour, seat, setSeat, onBack, onFinish, t }) {
   )
 }
 
-function Ticket({ tour, days, options, photoPlan, seat, card, method, school, tourType, total, onClose, t }) {
+function Ticket({ tour, days, options, planChoices, seat, card, method, school, tourType, total, onClose, t }) {
   const code = useMemo(() => {
     let h = ''
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -527,12 +528,14 @@ function Ticket({ tour, days, options, photoPlan, seat, card, method, school, to
             <div className="t-field">
               <div className="t-label">{t.checkout.photoshoot}</div>
               <div className="t-value">
-                {options.photoshoot ? t.checkout.photoPlans[photoPlan] : t.checkout.notIncluded}
+                {options.photoshoot ? t.checkout.photoPlans[planChoices.photoshoot] : t.checkout.notIncluded}
               </div>
             </div>
             <div className="t-field">
               <div className="t-label">{t.checkout.food}</div>
-              <div className="t-value">{options.food ? t.checkout.included : t.checkout.notIncluded}</div>
+              <div className="t-value">
+                {options.food ? t.checkout.foodPlans[planChoices.food] : t.checkout.notIncluded}
+              </div>
             </div>
             <div className="t-field">
               <div className="t-label">{t.checkout.cottage}</div>
@@ -573,7 +576,7 @@ function Ticket({ tour, days, options, photoPlan, seat, card, method, school, to
   )
 }
 
-function Success({ tour, days, options, photoPlan, seat, card, method, school, tourType, total, onClose, t }) {
+function Success({ tour, days, options, planChoices, seat, card, method, school, tourType, total, onClose, t }) {
   return (
     <div className="success">
       <div className="check-circle">
@@ -584,7 +587,7 @@ function Success({ tour, days, options, photoPlan, seat, card, method, school, t
       <h2>{t.checkout.ticketBought}</h2>
       <p>Ticket bought</p>
       <Ticket
-              photoPlan={photoPlan}
+        planChoices={planChoices}
         tour={tour}
         days={days}
         options={options}
@@ -610,9 +613,9 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
   useEffect(() => () => lockPin(SHOP_SCOPE), [])
   const [step, setStep] = useState(1)
   const [options, setOptions] = useState({ photoshoot: false, food: false, cottage: false })
-  // Which photo package was chosen inside the photoshoot menu (only when the
-  // photoshoot extra is included). Defaults to the first plan.
-  const [photoPlan, setPhotoPlan] = useState('p1')
+  // Which package was chosen inside each extra's menu (photoshoot plans,
+  // food plans). Defaults to each extra's first plan.
+  const [planChoices, setPlanChoices] = useState({ photoshoot: 'p1', food: 'f1' })
   const [method, setMethod] = useState(null)
   const [card, setCard] = useState({ number: '', name: '', expiry: '', cvc: '', phone: '' })
   // School-payment details, filled when the «Դպրոց» method is chosen.
@@ -639,11 +642,11 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
     let sum = tourPriceForDays(tour, days)
     for (const ex of EXTRAS) {
       if (!options[ex.key]) continue
-      sum += ex.plans?.find((p) => p.id === photoPlan)?.price ?? ex.price
+      sum += ex.plans?.find((p) => p.id === planChoices[ex.key])?.price ?? ex.price
     }
     sum += TOUR_TYPES.find((ty) => ty.id === tourType)?.price ?? 0
     return sum
-  }, [tour, days, options, photoPlan, tourType])
+  }, [tour, days, options, planChoices, tourType])
 
   const steps = [t.checkout.step1, t.checkout.step2, t.checkout.step3]
 
@@ -702,7 +705,7 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
         <div className="checkout-body">
           {finished ? (
             <Success
-              photoPlan={photoPlan}
+              planChoices={planChoices}
               tour={tour}
               days={days}
               options={options}
@@ -717,8 +720,8 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
             />
           ) : step === 1 ? (
             <StepOptions
-              photoPlan={photoPlan}
-              setPhotoPlan={setPhotoPlan}
+              planChoices={planChoices}
+              setPlanChoices={setPlanChoices}
               options={options}
               setOptions={setOptions}
               total={total}
@@ -767,18 +770,19 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
                       null,
                     tour_type: tourType,
                     photoshoot: options.photoshoot,
-                    photo_plan: options.photoshoot ? photoPlan : null,
+                    photo_plan: options.photoshoot ? planChoices.photoshoot : null,
                     food: options.food,
+                    food_plan: options.food ? planChoices.food : null,
                     cottage: options.cottage,
                     payment_method: method?.id ?? null,
                     total_amd: total,
                     card_last4: card.number.replace(/\D/g, '').slice(-4) || null,
                   }
                   let res = await supabase.from('bookings').insert(booking)
-                  // Older schema without the photo_plan column: retry without it
+                  // Older schema without the plan columns: retry without them
                   // so the booking itself is never lost.
-                  if (res.error && /photo_plan/i.test(res.error.message || '')) {
-                    const { photo_plan, ...rest } = booking
+                  if (res.error && /(photo_plan|food_plan)/i.test(res.error.message || '')) {
+                    const { photo_plan, food_plan, ...rest } = booking
                     res = await supabase.from('bookings').insert(rest)
                   }
                 } catch (err) {

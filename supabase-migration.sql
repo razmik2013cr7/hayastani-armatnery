@@ -13,8 +13,10 @@ alter table public.bookings add column if not exists days int not null default 1
 alter table public.bookings add column if not exists tour_type text;
 alter table public.bookings add column if not exists payment_method text;
 alter table public.bookings add column if not exists buyer_name text;
--- Chosen photo package when the photoshoot extra is included ('p1' | 'p2' | 'p3').
+-- Chosen photo package when the photoshoot extra is included ('p1'..'p4').
 alter table public.bookings add column if not exists photo_plan text;
+-- Chosen meal option when the food extra is included ('f1' | 'f2').
+alter table public.bookings add column if not exists food_plan text;
 
 -- Bookings: let visitors see which seats are taken (the live seat map).
 drop policy if exists "anyone can view bookings" on public.bookings;
