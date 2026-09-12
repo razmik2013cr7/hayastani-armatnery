@@ -104,7 +104,7 @@ export const translations = {
       step1: 'Ընտրանքներ',
       step2: 'Վճարում',
       step3: 'Տեղը ավտոբուսում',
-      photoshoot: 'Լուսանկարչություն',
+      photoshoot: 'Լուսակարիչ',
       food: 'Սնունդ',
       cottage: 'Քոտեջ',
       included: 'Ներառված է',
