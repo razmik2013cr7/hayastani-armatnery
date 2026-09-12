@@ -117,6 +117,7 @@ export const translations = {
         p1: '1 Մշակված նկար և 5 չմշակված',
         p2: 'Նվեր երեխային՝ 2 մշակված նկար',
         p3: '5 չմշակված նկար',
+        p4: 'Նվեր երեխային՝ 3 մշակված և 10 չմշակված նկար',
       },
       extrasInfo: {
         photoshoot: 'Պրոֆեսիոնալ լուսակարիչ կուղեկցի ձեզ ամբողջ տուրի ընթացքում։ Կստանաք բոլոր լուսանկարները տուրից հետո։',
@@ -362,6 +363,7 @@ export const translations = {
         p1: '1 edited photo and 5 unedited',
         p2: 'A gift for the child — 2 edited photos',
         p3: '5 unedited photos',
+        p4: 'A gift for the child — 3 edited and 10 unedited photos',
       },
       extrasInfo: {
         photoshoot: 'A professional photographer accompanies you throughout the tour. You receive all the photos after the trip.',
@@ -606,6 +608,7 @@ export const translations = {
         p1: '1 обработанное фото и 5 необработанных',
         p2: 'Подарок ребёнку — 2 обработанных фото',
         p3: '5 необработанных фото',
+        p4: 'Подарок ребёнку — 3 обработанных и 10 необработанных фото',
       },
       extrasInfo: {
         photoshoot: 'Профессиональный фотограф сопровождает вас на протяжении всего тура. Все фотографии вы получите после поездки.',

@@ -38,10 +38,16 @@ export const EXTRAS = [
   {
     key: 'photoshoot',
     icon: '📷',
+    // Default price — used for plans that don't define their own.
     price: 15000,
     // Photo-package plans offered inside the photoshoot menu (labels in i18n:
-    // checkout.photoPlans). The first one is the default when included.
-    plans: ['p1', 'p2', 'p3'],
+    // checkout.photoPlans). A plan may override the price (AMD).
+    plans: [
+      { id: 'p1' },
+      { id: 'p2' },
+      { id: 'p3' },
+      { id: 'p4', price: 80000 },
+    ],
   },
   { key: 'food', icon: '🍽️', price: 8000 },
   { key: 'cottage', icon: '🏡', price: 25000 },

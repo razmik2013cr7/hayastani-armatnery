@@ -2058,3 +2058,17 @@ body {
   font-weight: 700;
   box-shadow: 0 0 0 1px var(--red) inset;
 }
+
+/* Price badge on plans that override the base extra price */
+.plan-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.plan-price {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--red);
+  white-space: nowrap;
+}

@@ -21,6 +21,8 @@ function formatExpiry(value) {
 
 function OptionRow({ icon, label, price, info, plans, plan, setPlan, value, onChange, t }) {
   const [open, setOpen] = useState(false)
+  // The card head shows the price of the chosen plan when it overrides the base.
+  const activePrice = plans?.find((p) => p.id === plan)?.price ?? price
   return (
     <div className={`option-card${value ? ' chosen' : ''}`}>
       <button
@@ -31,7 +33,7 @@ function OptionRow({ icon, label, price, info, plans, plan, setPlan, value, onCh
       >
         <span className="opt-icon" aria-hidden="true">{icon}</span>
         <span className="option-name">{label}</span>
-        <span className="opt-price">+{fmt.format(price)} ֏</span>
+        <span className="opt-price">+{fmt.format(activePrice)} ֏</span>
         <span className={`opt-badge${value ? ' on' : ''}`}>
           {value ? t.checkout.included : t.checkout.notIncluded}
         </span>
@@ -46,12 +48,15 @@ function OptionRow({ icon, label, price, info, plans, plan, setPlan, value, onCh
               <div className="plan-opts">
                 {plans.map((p) => (
                   <button
-                    key={p}
+                    key={p.id}
                     type="button"
-                    className={`plan-opt${plan === p ? ' active' : ''}`}
-                    onClick={() => setPlan(p)}
+                    className={`plan-opt${plan === p.id ? ' active' : ''}`}
+                    onClick={() => setPlan(p.id)}
                   >
-                    {t.checkout.photoPlans[p]}
+                    <span>{t.checkout.photoPlans[p.id]}</span>
+                    {p.price != null && (
+                      <span className="plan-price">{fmt.format(p.price)} ֏</span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -629,12 +634,16 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
   const needsDayChoice = categoryDays == null
 
   // Whole-tour price = base price for the chosen length + extras + tour-type surcharge.
+  // An extra whose chosen plan defines its own price uses that instead of the base.
   const total = useMemo(() => {
     let sum = tourPriceForDays(tour, days)
-    for (const ex of EXTRAS) if (options[ex.key]) sum += ex.price
+    for (const ex of EXTRAS) {
+      if (!options[ex.key]) continue
+      sum += ex.plans?.find((p) => p.id === photoPlan)?.price ?? ex.price
+    }
     sum += TOUR_TYPES.find((ty) => ty.id === tourType)?.price ?? 0
     return sum
-  }, [tour, days, options, tourType])
+  }, [tour, days, options, photoPlan, tourType])
 
   const steps = [t.checkout.step1, t.checkout.step2, t.checkout.step3]
 
