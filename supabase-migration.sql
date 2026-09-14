@@ -19,6 +19,9 @@ alter table public.bookings add column if not exists photo_plan text;
 alter table public.bookings add column if not exists food_plan text;
 -- Chosen cottage type when the cottage extra is included ('c1' | 'c2' | 'c3').
 alter table public.bookings add column if not exists cottage_plan text;
+-- School-payment details line (name, class, school, stream, teacher) shown
+-- in the taken-seats info panel behind the staff PIN.
+alter table public.bookings add column if not exists school_info text;
 
 -- Bookings: let visitors see which seats are taken (the live seat map).
 drop policy if exists "anyone can view bookings" on public.bookings;
