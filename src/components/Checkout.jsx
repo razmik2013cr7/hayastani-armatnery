@@ -268,6 +268,20 @@ function StepPayment({ method, setMethod, card, setCard, school, setSchool, tota
             <label htmlFor="school-teacher">{t.checkout.schoolTeacher}</label>
             <input id="school-teacher" value={school.teacher} onChange={(e) => setSchool((s) => ({ ...s, teacher: e.target.value }))} />
           </div>
+          <div className="field">
+            <label htmlFor="school-phone">{t.checkout.schoolPhone}</label>
+            <input
+              id="school-phone"
+              inputMode="tel"
+              placeholder="077 000000"
+              value={school.phone}
+              onChange={(e) => setSchool((s) => ({ ...s, phone: e.target.value.replace(/[^0-9+ ]/g, '').slice(0, 12) }))}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="school-address">{t.checkout.schoolAddress}</label>
+            <input id="school-address" value={school.address} onChange={(e) => setSchool((s) => ({ ...s, address: e.target.value }))} />
+          </div>
           {schoolError && <div className="pin-error">{schoolError}</div>}
         </div>
       )}
@@ -710,6 +724,8 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
     school: '',
     stream: '',
     teacher: '',
+    phone: '',
+    address: '',
   })
   const [seat, setSeat] = useState(null)
   const [finished, setFinished] = useState(false)
@@ -861,6 +877,8 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
                             school.school && `${t.checkout.schoolSchool}: ${school.school}`,
                             school.stream && `${t.checkout.schoolStream}: ${school.stream}`,
                             school.teacher && `${t.checkout.schoolTeacher}: ${school.teacher}`,
+                            school.phone && `Հեռ. ${school.phone}`,
+                            school.address && `Հասցե: ${school.address}`,
                           ].filter(Boolean).join(', ')
                         : null,
                     total_amd: total,
