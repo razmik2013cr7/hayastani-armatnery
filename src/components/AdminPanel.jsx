@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../AuthContext.jsx'
-import { STAFF_PIN, BUILTIN_BUS_IDS } from '../data.js'
+import { STAFF_PIN, BUILTIN_BUS_IDS, TOURS } from '../data.js'
+import BusSeats from './BusSeats.jsx'
 
 const fmt = new Intl.NumberFormat('hy-AM')
 
@@ -116,9 +117,33 @@ function formFromRow(row) {
   }
 }
 
-function TourForm({ initial, editing, saving, onSave, onCancel, t }) {
+function TourForm({ initial, editing, cardMode, saving, onSave, onCancel, t }) {
   const [form, setForm] = useState(initial)
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+  // Card tours only need the three name fields.
+  if (cardMode) {
+    return (
+      <form onSubmit={(e) => { e.preventDefault(); onSave(form) }} className="admin-form">
+        <h3>{editing ? `✏️ ${t.admin.editCardTour}` : `➕ ${t.admin.addCardTour}`}</h3>
+        <label className="field">
+          <span>{t.admin.name} (AM)</span>
+          <input value={form.title} onChange={set('title')} required />
+        </label>
+        <label className="field">
+          <span>{t.admin.name} (EN)</span>
+          <input value={form.titleEn} onChange={set('titleEn')} placeholder={form.title} />
+        </label>
+        <label className="field">
+          <span>{t.admin.name} (RU)</span>
+          <input value={form.titleRu} onChange={set('titleRu')} placeholder={form.title} />
+        </label>
+        <div className="checkout-actions">
+          <button type="button" className="btn btn-ghost" onClick={onCancel}>{t.admin.cancel}</button>
+          <button type="submit" className="btn btn-primary" disabled={saving}>{t.admin.save}</button>
+        </div>
+      </form>
+    )
+  }
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSave(form) }} className="admin-form">
       <h3>{editing ? `✏️ ${t.admin.editTour}` : `➕ ${t.admin.addTour}`}</h3>
@@ -199,12 +224,14 @@ function TourList({ heading, sub, tours, picked, onPick, t, actions }) {
         <ul className="admin-tour-list">
           {tours.map((row) => (
             <li key={row.id}>
-              <label className="admin-tour-item">
+              <label className={`admin-tour-item${row.hidden ? ' hidden-tour' : ''}`}>
                 <input type="radio" name="admin-pick" checked={picked === row.id} onChange={() => onPick(row.id)} />
                 <span>
-                  <strong>{row.title}</strong>
+                  <strong>{row.title}{row.builtin ? ' ⭐' : ''}</strong>
                   <em>
-                    {row.region === 'abroad' ? t.admin.abroad : t.admin.home} · {row.days} {t.checkout.daysWord} · {fmt.format(Number(row.price) || 0)} ֏
+                    {row.region === 'abroad' ? t.admin.abroad : t.admin.home} · {row.days} {t.checkout.daysWord}
+                    {!row.builtin && row.price != null && ` · ${fmt.format(Number(row.price) || 0)} ֏`}
+                    {row.hidden && ` · ${t.admin.hiddenTag}`}
                   </em>
                 </span>
               </label>
@@ -224,9 +251,51 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState(null) // { kind: 'ok' | 'err', text }
   const [tours, setTours] = useState(null) // rows of the active table
+  const [hidden, setHidden] = useState(new Set()) // hidden builtin ids
   const [picked, setPicked] = useState(null) // id picked for edit/delete
   const [formOpen, setFormOpen] = useState(false) // edit mode: form shown?
   const [busTour, setBusTour] = useState('') // '' = every bus
+
+  const isCard = ['addCard', 'delCard'].includes(initialMode)
+
+  // Build the list shown in delete/edit pickers: DB rows + builtin tours
+  // (marked, still listed even when hidden so they can be restored).
+  const buildList = (rows, hiddenSet) => {
+    const list = (rows || []).map((r) => ({
+      id: r.id,
+      dbId: r.id,
+      title: r.title,
+      region: r.region,
+      days: r.days,
+      price: r.price,
+      hidden: false,
+    }))
+    for (const b of TOURS) {
+      list.push({
+        id: b.id,
+        builtin: true,
+        title: t.tours[b.id]?.title || b.id,
+        region: b.home ? 'home' : 'abroad',
+        days: b.days,
+        price: b.price,
+        hidden: hiddenSet.has(b.id),
+      })
+    }
+    return list
+  }
+
+  // DB rows + the hidden-builtin set for the active kind (regular/card).
+  const loadAll = async () => {
+    setTours(null)
+    const table = isCard ? TABLES.card : TABLES.tour
+    const [{ data: rows, error }, { data: hiddenRows }] = await Promise.all([
+      supabase.from(table).select('*').order('created_at', { ascending: false }),
+      supabase.from('hidden_tours').select('tour_id').eq('kind', isCard ? 'card' : 'tour'),
+    ])
+    if (error) notify('err', error.message)
+    setHidden(new Set((hiddenRows || []).map((r) => r.tour_id)))
+    setTours(buildList(rows || [], new Set((hiddenRows || []).map((r) => r.tour_id))))
+  }
 
   // The PIN arms ONE action. Completing it (or canceling) re-locks, so the
   // next action asks for the PIN again.
@@ -243,7 +312,7 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
     setTimeout(() => setMsg(null), 4000)
   }
 
-  const activeTable = ['addCard', 'delCard'].includes(mode) ? TABLES.card : TABLES.tour
+  const activeTable = isCard ? TABLES.card : TABLES.tour
 
   const loadTours = (table) => {
     setTours(null)
@@ -253,7 +322,7 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) notify('err', error.message)
-        setTours(data || [])
+        setTours(buildList(data || [], hidden))
       })
   }
 
@@ -262,9 +331,7 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
     if (pin !== STAFF_PIN) return false
     setUnlocked(true)
     setMode(initialMode)
-    if (['edit', 'delete', 'delCard'].includes(initialMode)) {
-      loadTours(['delCard'].includes(initialMode) ? TABLES.card : TABLES.tour)
-    }
+    if (['edit', 'delete', 'delCard'].includes(initialMode)) loadAll()
     return true
   }
 
@@ -285,7 +352,13 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
   const saveTour = async (form) => {
     setBusy(true)
     const editing = mode === 'edit' && picked
-    const values = rowFromForm(form)
+    const values = isCard
+      ? {
+          title: form.title.trim(),
+          title_en: form.titleEn.trim() || null,
+          title_ru: form.titleRu.trim() || null,
+        }
+      : rowFromForm(form)
     let res = editing
       ? await supabase.from(activeTable).update(values).eq('id', picked)
       : await supabase.from(activeTable).insert(values)
@@ -311,15 +384,36 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
   const deleteTour = async () => {
     if (!picked) return
     setBusy(true)
-    const { error } = await supabase.from(activeTable).delete().eq('id', picked)
+    const item = (tours || []).find((r) => r.id === picked)
+    let error = null
+    if (item?.builtin) {
+      // Builtin tours can't be deleted from the code — hide them instead.
+      ;({ error } = await supabase
+        .from('hidden_tours')
+        .insert({ kind: isCard ? 'card' : 'tour', tour_id: picked }))
+      // Already hidden → restore instead (toggle).
+      if (error && error.code === '23505') {
+        const r2 = await supabase
+          .from('hidden_tours')
+          .delete()
+          .eq('kind', isCard ? 'card' : 'tour')
+          .eq('tour_id', picked)
+        error = r2.error
+        notify('ok', `✅ ${t.admin.restored}`)
+      } else {
+        notify('ok', `🗑 ${t.admin.hidden}`)
+      }
+    } else {
+      const { error: e } = await supabase.from(activeTable).delete().eq('id', picked)
+      error = e
+      if (!error) notify('ok', `🗑 ${t.admin.deleted}`)
+    }
     setBusy(false)
-    if (error) {
+    if (error && error.code !== '23505') {
       notify('err', error.message || t.admin.failed)
       return
     }
-    setTours((rows) => rows.filter((r) => r.id !== picked))
     setPicked(null)
-    notify('ok', `🗑 ${t.admin.deleted}`)
     // Re-lock: deleting another tour asks for the PIN again.
     wantMode()
     if (onSaved) onSaved()
@@ -364,6 +458,7 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
               key="new"
               initial={EMPTY_FORM}
               editing={false}
+              cardMode={isCard}
               saving={busy}
               onSave={saveTour}
               onCancel={onClose}
@@ -377,9 +472,10 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
                 key={picked}
                 initial={formInitial}
                 editing
+                cardMode={isCard && (tours || []).find((r) => r.id === picked)?.dbId}
                 saving={busy}
                 onSave={saveTour}
-                onCancel={() => { setFormOpen(false); loadTours(TABLES.tour) }}
+                onCancel={() => { setFormOpen(false); loadAll() }}
                 t={t}
               />
             ) : (
@@ -455,7 +551,8 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
 
 // The admin buttons shown on the main page.
 export function AdminEntry({ t, onSaved }) {
-  const [open, setOpen] = useState(null) // 'add' | 'edit' | 'delete' | 'bus' | null
+  const [open, setOpen] = useState(null) // 'add' | 'edit' | 'delete' | 'bus' | 'seats' | null
+  const [seatsOpen, setSeatsOpen] = useState(false)
   return (
     <div className="admin-entry">
       <button type="button" className="btn btn-ghost admin-btn" onClick={() => setOpen('add')}>
@@ -467,12 +564,16 @@ export function AdminEntry({ t, onSaved }) {
       <button type="button" className="btn btn-ghost admin-btn" onClick={() => setOpen('delete')}>
         🗑 {t.admin.deleteTour}
       </button>
+      <button type="button" className="btn btn-ghost admin-btn" onClick={() => setSeatsOpen(true)}>
+        📋 {t.admin.showBusSeats}
+      </button>
       <button type="button" className="btn btn-ghost admin-btn" onClick={() => setOpen('bus')}>
         🚌 {t.admin.cleanBus}
       </button>
       {open && (
         <AdminPanel t={t} initialMode={open} onClose={() => setOpen(null)} onSaved={onSaved} />
       )}
+      {seatsOpen && <BusSeats t={t} onClose={() => setSeatsOpen(false)} />}
     </div>
   )
 }

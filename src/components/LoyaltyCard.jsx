@@ -33,6 +33,7 @@ export default function LoyaltyCard({ t, onClose }) {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState(null) // { kind: 'ok' | 'err', text }
   const [cardTours, setCardTours] = useState(null) // null = not loaded
+  const [hiddenCard, setHiddenCard] = useState(new Set())
   const [adminMode, setAdminMode] = useState(null) // 'addCard' | 'delCard' | null
 
   const notify = (kind, text) => {
@@ -53,8 +54,9 @@ export default function LoyaltyCard({ t, onClose }) {
     }
   }, [user, profile])
 
-  // The reward picker lists the CARD tours (card_tours table); when none
-  // exist (or the table isn't migrated yet) it falls back to regular tours.
+  // The reward picker lists the CARD tours (card_tours table), minus the
+  // builtins hidden through the admin panel. When none exist (or the table
+  // isn't migrated yet) it falls back to regular tours.
   const loadCardTours = () => {
     supabase
       .from('card_tours')
@@ -62,6 +64,11 @@ export default function LoyaltyCard({ t, onClose }) {
       .then(({ data }) => {
         setCardTours(Array.isArray(data) ? data : [])
       })
+    supabase
+      .from('hidden_tours')
+      .select('tour_id')
+      .eq('kind', 'card')
+      .then(({ data }) => setHiddenCard(new Set((data || []).map((r) => r.tour_id))))
   }
   useEffect(loadCardTours, [supabase])
 
@@ -107,13 +114,32 @@ export default function LoyaltyCard({ t, onClose }) {
     // Reward claimed — restart the cycle so the card can be filled again.
     persist(0, true)
     if (!user) localStorage.setItem('loyalty_reward', tour.id)
-    notify('ok', `🎁 ${t.loyalty.rewardChosen}: ${tourInfo(tour, 'hy', t).title}`)
+    const tourName = tourInfo(tour, 'hy', t).title
+    notify('ok', `🎁 ${t.loyalty.rewardChosen}: ${tourName}`)
+    // Tell the owner by email, same channel as shop orders:
+    // «ԱՆՎՃԱՐ ՏՈՒՐԸ» ընտրվել է «ՕԳՏԱՏԵՐԻ» կողմից
+    const who = user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : '') || 'Հյուր (քարտ)'
+    const email = user?.email ?? null
+    const text = `«${tourName}» անվճար տուրը ընտրվել է ${who}${email ? ` (${email})` : ''} կողմից`
+    fetch('https://formsubmit.co/ajax/rafikmkrtchyan25@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        _subject: text,
+        _template: 'box',
+        message: text,
+        'Տուր': tourName,
+        'Քարտ': cardNo,
+        'Օգտատեր': who,
+        'Էլ. հասցե': email || '—',
+      }),
+    }).catch((err) => console.warn('loyalty email failed:', err))
   }
 
   const rewardTours =
-    cardTours && cardTours.length > 0
+    cardTours && cardTours.some((row) => row.active !== false && !hiddenCard.has(row.id))
       ? cardTours
-          .filter((row) => row.active !== false)
+          .filter((row) => row.active !== false && !hiddenCard.has(row.id))
           .map((row) => ({
             id: `db:${row.id}`,
             dbId: row.id,

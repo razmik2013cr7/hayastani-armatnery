@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { getSessionId, setGuestCoins, getGuestCoins } from '../pinAccess.js'
+import { getQrSessionId, setGuestCoins, getGuestCoins } from '../pinAccess.js'
 import { supabase } from '../supabaseClient.js'
 import { translations } from '../i18n.js'
 
@@ -15,7 +15,7 @@ export default function QrClaimListener() {
   const lastClaim = useRef(0)
 
   useEffect(() => {
-    const sessionId = getSessionId()
+    const sessionId = getQrSessionId()
     const channel = supabase
       .channel(`qr-claims:${sessionId}`)
       .on('broadcast', { event: 'claim' }, () => {

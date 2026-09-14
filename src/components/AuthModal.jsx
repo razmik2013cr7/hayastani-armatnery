@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../AuthContext.jsx'
 import { STAFF_PIN } from '../data.js'
 import { unlockPin } from '../pinAccess.js'
+import { canUsePin, endPinSession, prunePinSessions, startPinSession } from '../pinSession.js'
 
 // The auth modal's PIN mode unlocks the shop scope (tickets + store).
 const PIN_SCOPE = 'shop'
@@ -36,6 +37,17 @@ export default function AuthModal({ onClose, t }) {
         setError(t.checkout.pinWrong)
         return
       }
+      // Max 7 devices may hold the PIN at the same time.
+      setBusy(true)
+      const { ok, count, max } = await canUsePin()
+      if (!ok) {
+        setBusy(false)
+        setError(t.checkout.pinBusy.replace('{count}', count).replace('{max}', max))
+        return
+      }
+      await startPinSession()
+      prunePinSessions()
+      setBusy(false)
       unlockPin(PIN_SCOPE)
       onClose()
       return

@@ -155,6 +155,44 @@ $$;
 
 grant execute on function public.reset_bus_bookings(text, text) to anon, authenticated;
 
+-- ============================================================
+-- PIN session limiter — at most 7 devices may hold the staff PIN
+-- at the same time. Each unlocked device registers a row here and
+-- heartbeats every 20s; rows older than 60s are considered gone.
+-- ============================================================
+create table if not exists public.pin_sessions (
+  device text primary key,
+  last_seen timestamptz not null default now()
+);
+
+alter table public.pin_sessions enable row level security;
+
+drop policy if exists "anyone can manage pin sessions" on public.pin_sessions;
+create policy "anyone can manage pin sessions"
+  on public.pin_sessions for all
+  using (true)
+  with check (true);
+
+-- ============================================================
+-- Hidden builtin tours — "deleting" a hardcoded tour (regular or card)
+-- writes its id here so it disappears from the site; deleting the row
+-- (delete again in the panel) restores it.
+-- ============================================================
+create table if not exists public.hidden_tours (
+  kind text not null check (kind in ('tour', 'card')),
+  tour_id text not null,
+  created_at timestamptz not null default now(),
+  primary key (kind, tour_id)
+);
+
+alter table public.hidden_tours enable row level security;
+
+drop policy if exists "anyone can manage hidden tours" on public.hidden_tours;
+create policy "anyone can manage hidden tours"
+  on public.hidden_tours for all
+  using (true)
+  with check (true);
+
 -- Loyalty card («Հավատարմության Քարտ») state for signed-in users.
 -- Guests keep the same data in their device's localStorage.
 alter table public.profiles add column if not exists loyalty_stars int not null default 0;

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { BUS_SEAT_ROWS, CATEGORIES, EXTRAS, PAYMENT_METHODS, STAFF_PIN, TOUR_TYPES, TAKEN_SEATS, extraPrice, tourPriceForDays } from '../data.js'
+import { BUS_SEAT_ROWS, CATEGORIES, EXTRAS, PAYMENT_METHODS, STAFF_PIN, TAKEN_SEATS, extraPrice, tourPriceForDays } from '../data.js'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
 import { lockPin, usePinUnlocked } from '../pinAccess.js'
@@ -24,8 +24,10 @@ function OptionRow({ icon, label, extra, info, plansI18n, plan, setPlan, value, 
   // The card head shows the price of the chosen plan for the trip length —
   // per-day extras (food) multiply by the days.
   const { plans, price } = extra
-  const activePrice = extraPrice(extra, plan, days)
-  const perDayNote = activePrice !== (plans?.find((p) => p.id === plan)?.price ?? price)
+  const activePlan = plans?.find((p) => p.id === plan)
+  const activePrice = extraPrice(extra, plan)
+  const perDayNote = activePrice !== (activePlan?.price ?? price)
+  const mult = activePlan?.days ?? days
   return (
     <div className={`option-card${value ? ' chosen' : ''}`}>
       <button
@@ -37,7 +39,7 @@ function OptionRow({ icon, label, extra, info, plansI18n, plan, setPlan, value, 
         <span className="opt-icon" aria-hidden="true">{icon}</span>
         <span className="option-name">{label}</span>
         <span className="opt-price">
-          +{fmt.format(activePrice)} ֏{perDayNote && <em className="opt-perday"> ({fmt.format(price)}×{days})</em>}
+          +{fmt.format(activePrice)} ֏{perDayNote && <em className="opt-perday"> ({fmt.format(price)}×{mult})</em>}
         </span>
         <span className={`opt-badge${value ? ' on' : ''}`}>
           {value ? t.checkout.included : t.checkout.notIncluded}
@@ -58,7 +60,7 @@ function OptionRow({ icon, label, extra, info, plansI18n, plan, setPlan, value, 
               </div>
               <div className="plan-opts">
                 {plans.map((p) => {
-                  const pPrice = extraPrice(extra, p.id, days)
+                  const pPrice = extraPrice(extra, p.id)
                   const pBase = p.price ?? price
                   return (
                     <button
@@ -70,7 +72,7 @@ function OptionRow({ icon, label, extra, info, plansI18n, plan, setPlan, value, 
                       <span>{t.checkout[plansI18n][p.id]}</span>
                       <span className="plan-price">
                         +{fmt.format(pPrice)} ֏
-                        {pPrice !== pBase && <em className="opt-perday"> ({fmt.format(pBase)}×{days})</em>}
+                        {pPrice !== pBase && <em className="opt-perday"> ({fmt.format(pBase)}×{p.days ?? days})</em>}
                       </span>
                     </button>
                   )
@@ -183,7 +185,7 @@ function StepOptions({ tour, options, setOptions, planChoices, setPlanChoices, t
   )
 }
 
-function StepPayment({ method, setMethod, card, setCard, school, setSchool, tourType, setTourType, total, onBack, onNext, t }) {
+function StepPayment({ method, setMethod, card, setCard, school, setSchool, total, onBack, onNext, t }) {
   const [schoolError, setSchoolError] = useState(null)
   const set = (k, fmtFn) => (e) => {
     const v = fmtFn ? fmtFn(e.target.value) : e.target.value
@@ -269,24 +271,6 @@ function StepPayment({ method, setMethod, card, setCard, school, setSchool, tour
           {schoolError && <div className="pin-error">{schoolError}</div>}
         </div>
       )}
-
-      <div className="tour-type-box">
-        <div className="dep-label">{t.checkout.selectClass}</div>
-        <div className="tour-types" role="group" aria-label={t.checkout.selectClass}>
-          {TOUR_TYPES.map((ty) => (
-            <button
-              key={ty.id}
-              type="button"
-              className={`tour-type${tourType === ty.id ? ' active' : ''}`}
-              onClick={() => setTourType(ty.id)}
-            >
-              <span aria-hidden="true">{ty.icon}</span>
-              <span className="tt-name">{t.checkout[ty.id]}</span>
-              <span className="tt-price">{ty.price > 0 ? `+${fmt.format(ty.price)} ֏` : '—'}</span>
-            </button>
-          ))}
-        </div>
-      </div>
 
       <div className="total-bar">
         <span>{t.checkout.total}</span>
@@ -589,7 +573,7 @@ function StepSeats({ tour, seat, setSeat, onBack, onFinish, t }) {
   )
 }
 
-function Ticket({ tour, days, options, planChoices, seat, card, method, school, tourType, total, onClose, t }) {
+function Ticket({ tour, days, options, planChoices, seat, card, method, school, total, onClose, t }) {
   const code = useMemo(() => {
     let h = ''
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -622,10 +606,6 @@ function Ticket({ tour, days, options, planChoices, seat, card, method, school, 
             <div className="t-field">
               <div className="t-label">{t.checkout.selectSeat}</div>
               <div className="t-value">{seat}</div>
-            </div>
-            <div className="t-field">
-              <div className="t-label">{t.checkout.selectClass}</div>
-              <div className="t-value">{t.checkout[tourType] || '—'}</div>
             </div>
             <div className="t-field">
               <div className="t-label">{t.checkout.photoshoot}</div>
@@ -680,7 +660,7 @@ function Ticket({ tour, days, options, planChoices, seat, card, method, school, 
   )
 }
 
-function Success({ tour, days, options, planChoices, seat, card, method, school, tourType, total, onClose, t }) {
+function Success({ tour, days, options, planChoices, seat, card, method, school, total, onClose, t }) {
   return (
     <div className="success">
       <div className="check-circle">
@@ -699,7 +679,6 @@ function Success({ tour, days, options, planChoices, seat, card, method, school,
         card={card}
         method={method}
         school={school}
-        tourType={tourType}
         total={total}
         onClose={onClose}
         t={t}
@@ -732,25 +711,22 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
     stream: '',
     teacher: '',
   })
-  // Only personal tours are offered — the group option was removed.
-  const [tourType, setTourType] = useState('personal')
   const [seat, setSeat] = useState(null)
   const [finished, setFinished] = useState(false)
   // Tours opened from the "All" category ask for the trip length at purchase.
   const [days, setDays] = useState(tour.days)
   const needsDayChoice = categoryDays == null
 
-  // Whole-tour price = base price for the chosen length + extras + tour-type surcharge.
-  // Food is a per-day rate (8000 × days); plans with their own price use it.
+  // Whole-tour price = base price for the chosen length + extras.
+  // Food's chosen day-package multiplies the 8000 AMD daily rate.
   const total = useMemo(() => {
     let sum = tourPriceForDays(tour, days)
     for (const ex of EXTRAS) {
       if (!options[ex.key]) continue
-      sum += extraPrice(ex, planChoices[ex.key], days)
+      sum += extraPrice(ex, planChoices[ex.key])
     }
-    sum += TOUR_TYPES.find((ty) => ty.id === tourType)?.price ?? 0
     return sum
-  }, [tour, days, options, planChoices, tourType])
+  }, [tour, days, options, planChoices])
 
   const steps = [t.checkout.step1, t.checkout.step2, t.checkout.step3]
 
@@ -817,7 +793,6 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
               card={card}
               method={method}
               school={school}
-              tourType={tourType}
               total={total}
               onClose={onClose}
               t={t}
@@ -844,8 +819,6 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
               setCard={setCard}
               school={school}
               setSchool={setSchool}
-              tourType={tourType}
-              setTourType={setTourType}
               total={total}
               onBack={() => setStep(1)}
               onNext={() => setStep(3)}
@@ -872,7 +845,7 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
                       user?.user_metadata?.full_name ||
                       user?.email ||
                       null,
-                    tour_type: tourType,
+                    tour_type: null,
                     photoshoot: options.photoshoot,
                     photo_plan: options.photoshoot ? planChoices.photoshoot : null,
                     food: options.food,

@@ -2215,3 +2215,43 @@ body {
   font-size: 12.5px;
   padding: 6px 12px;
 }
+
+/* ---------- PIN usage counter ---------- */
+.pin-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border: 1px solid rgba(35, 32, 28, 0.15);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  color: var(--ink, #23201c);
+}
+
+.pin-counter strong {
+  color: var(--red, #c8382b);
+}
+
+.pin-counter-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #3fae5a;
+  box-shadow: 0 0 0 3px rgba(63, 174, 90, 0.15);
+}
+
+.pin-counter-dot.full {
+  background: var(--red, #c8382b);
+  box-shadow: 0 0 0 3px rgba(200, 56, 43, 0.15);
+}
+
+/* ---------- Hidden builtin tours in admin lists ---------- */
+.admin-tour-item.hidden-tour {
+  opacity: 0.45;
+}
+
+.admin-tour-item.hidden-tour strong::after {
+  content: ' 🚫';
+}

@@ -5,9 +5,12 @@ import { useAuth } from '../AuthContext.jsx'
 const fmt = new Intl.NumberFormat('hy-AM')
 
 // Tours created through the admin panel live in the DB and merge with the
-// built-in list. Falls back to the built-ins when the table is missing.
+// built-in list. Builtin tours hidden through the admin panel (hidden_tours
+// table, kind='tour') are filtered out. Falls back to the built-ins when the
+// table is missing.
 function useAllTours(supabase) {
   const [extra, setExtra] = useState([])
+  const [hidden, setHidden] = useState(new Set())
   useEffect(() => {
     let alive = true
     supabase
@@ -15,6 +18,13 @@ function useAllTours(supabase) {
       .select('*')
       .then(({ data }) => {
         if (alive && Array.isArray(data)) setExtra(data)
+      })
+    supabase
+      .from('hidden_tours')
+      .select('tour_id')
+      .eq('kind', 'tour')
+      .then(({ data }) => {
+        if (alive && Array.isArray(data)) setHidden(new Set(data.map((r) => r.tour_id)))
       })
     return () => {
       alive = false
@@ -38,8 +48,8 @@ function useAllTours(supabase) {
         descriptionRu: row.description_ru,
         departureAddress: row.departure_address,
       }))
-    return [...TOURS, ...custom]
-  }, [extra])
+    return [...TOURS.filter((b) => !hidden.has(b.id)), ...custom]
+  }, [extra, hidden])
 }
 
 function Group({ tours, title, onOpen, lang, t }) {

@@ -11,8 +11,9 @@ import LoyaltyCard from './components/LoyaltyCard.jsx'
 import ShopPage from './components/ShopPage.jsx'
 import QrClaimListener from './components/QrClaimListener.jsx'
 import { AdminEntry } from './components/AdminPanel.jsx'
+import PinCounter from './components/PinCounter.jsx'
 import { CATEGORIES, SITE_URL } from './data.js'
-import { getSessionId } from './pinAccess.js'
+import { getQrSessionId } from './pinAccess.js'
 import { AuthProvider } from './AuthContext.jsx'
 import { translations } from './i18n.js'
 import mainLogo from './assets/main-logo.jpeg'
@@ -37,7 +38,7 @@ export default function App() {
   // this device's session id — so a phone scan credits the coins to the
   // device that DISPLAYED the code, not to the phone itself.
   useEffect(() => {
-    const url = `${SITE_URL}/?s=${encodeURIComponent(getSessionId())}#/silver`
+    const url = `${SITE_URL}/?s=${encodeURIComponent(getQrSessionId())}#/silver`
     QRCode.toDataURL(url, { width: 240, margin: 1, color: { dark: '#23201c', light: '#faf6ef' } })
       .then(setQrDataUrl)
       .catch(() => setQrDataUrl(null))
@@ -102,6 +103,7 @@ export default function App() {
 
       <div className="admin-entry-wrap">
         <AdminEntry t={t} />
+        <PinCounter t={t} />
       </div>
 
       <main style={{ flex: 1 }}>

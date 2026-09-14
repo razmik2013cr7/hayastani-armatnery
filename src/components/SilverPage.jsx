@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import NavTabs from './NavTabs.jsx'
-import { getSessionId, getGuestCoins, setGuestCoins } from '../pinAccess.js'
+import { getQrSessionId, getGuestCoins, setGuestCoins } from '../pinAccess.js'
 import { REWARD_PIN } from '../data.js'
 import { supabase } from '../supabaseClient.js'
 import { translations } from '../i18n.js'
@@ -66,7 +66,7 @@ export default function SilverPage({ onBack }) {
         ch.send({
           type: 'broadcast',
           event: 'claim',
-          payload: { from: getSessionId(), coins: COIN_REWARD },
+          payload: { from: getQrSessionId(), coins: COIN_REWARD },
         })
         supabase.removeChannel(ch)
         notify('ok', t.silver.sentToComputer)

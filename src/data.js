@@ -66,25 +66,24 @@ export const EXTRAS = [
   {
     key: 'food',
     icon: '🍽️',
-    // Per-day rate — multiplied by the trip length at checkout.
+    // Per-day rate: the chosen package (1/3/5/7 days) multiplies it —
+    // 8000 × chosen days.
     price: 8000,
-    perDay: true,
     plansI18n: 'foodPlans',
-    plans: [{ id: 'f1' }, { id: 'f2' }],
+    plans: [
+      { id: 'f1', days: 1 },
+      { id: 'f3', days: 3 },
+      { id: 'f5', days: 5 },
+      { id: 'f7', days: 7 },
+    ],
   },
   {
     key: 'cottage',
     icon: '🏡',
-    price: 25000,
+    price: 50000,
     plansI18n: 'cottagePlans',
     plans: [{ id: 'c1' }, { id: 'c2' }, { id: 'c3' }],
   },
-]
-
-// Step-2 choice: only personal (private) tours are offered — the group
-// option (Ընդհանուր տուր) was removed at the owner's request.
-export const TOUR_TYPES = [
-  { id: 'personal', icon: '🚐', price: 20000 },
 ]
 
 // Payment options — card brands show the card form, wallets ask for a phone number.
@@ -123,12 +122,13 @@ export const REWARD_PIN = '2011'
 // Built-in tours: one bus per tour — ids used by the bus-cleaning picker.
 export const BUILTIN_BUS_IDS = ['gyumri', 'dilijan', 'jermuk', 'goris', 'tbilisi', 'sevan', 'syuniq', 'georgia']
 
-// Extra's price for the chosen plan and trip length. Food is a per-day
-// rate (8000 × days), the rest are flat.
-export function extraPrice(extra, planId, days) {
+// Extra's price for the chosen plan. Food is a per-day rate: the plan
+// carries how many days it covers (8000 × plan days); other plans may
+// define their own price, otherwise the extra's base price applies.
+export function extraPrice(extra, planId) {
   const plan = extra.plans?.find((p) => p.id === planId)
-  const base = plan?.price ?? extra.price
-  return extra.perDay ? base * (days || 1) : base
+  if (plan?.days) return extra.price * plan.days
+  return plan?.price ?? extra.price
 }
 
 // Price of a tour when booked for a different trip length than its base one,
