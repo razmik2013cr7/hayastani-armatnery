@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { TOURS } from '../data.js'
+import { TOURS, tourInfo } from '../data.js'
 import { useAuth } from '../AuthContext.jsx'
 
 const fmt = new Intl.NumberFormat('hy-AM')
@@ -31,13 +31,18 @@ function useAllTours(supabase) {
         days: Number(row.days) || 3,
         home: row.region !== 'abroad',
         title: row.title,
+        titleEn: row.title_en,
+        titleRu: row.title_ru,
         description: row.description,
+        descriptionEn: row.description_en,
+        descriptionRu: row.description_ru,
+        departureAddress: row.departure_address,
       }))
     return [...TOURS, ...custom]
   }, [extra])
 }
 
-function Group({ tours, title, onOpen, t }) {
+function Group({ tours, title, onOpen, lang, t }) {
   if (tours.length === 0) return null
   return (
     <div className="region-group">
@@ -47,7 +52,7 @@ function Group({ tours, title, onOpen, t }) {
       </h2>
       <div className="tour-grid">
         {tours.map((tour) => {
-          const info = tour.title ? { title: tour.title, description: tour.description, duration: `${tour.days} ${t.checkout.daysWord}` } : t.tours[tour.id]
+          const info = tourInfo(tour, lang, t)
           return (
             <button key={tour.id} type="button" className="tour-card" onClick={() => onOpen(tour)}>
               <div className="tour-media">
@@ -74,7 +79,7 @@ function Group({ tours, title, onOpen, t }) {
   )
 }
 
-export default function TourGrid({ days, onOpen, t }) {
+export default function TourGrid({ days, onOpen, lang, t }) {
   const { supabase } = useAuth()
   const tours = useAllTours(supabase)
   const visible = tours.filter((tour) => !days || tour.days === days)
@@ -85,8 +90,8 @@ export default function TourGrid({ days, onOpen, t }) {
         <p className="t-empty">—</p>
       ) : (
         <>
-          <Group tours={visible.filter((x) => x.home)} title={t.regions.home} onOpen={onOpen} t={t} />
-          <Group tours={visible.filter((x) => !x.home)} title={t.regions.abroad} onOpen={onOpen} t={t} />
+          <Group tours={visible.filter((x) => x.home)} title={t.regions.home} onOpen={onOpen} lang={lang} t={t} />
+          <Group tours={visible.filter((x) => !x.home)} title={t.regions.abroad} onOpen={onOpen} lang={lang} t={t} />
         </>
       )}
     </section>

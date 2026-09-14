@@ -69,6 +69,48 @@ create policy "anyone can delete tours"
   on public.tours for delete
   using (true);
 
+-- Extra per-tour columns: localized name/description variants and the
+-- tour's own departure address (shown on the card, modal, checkout, ticket).
+alter table public.tours
+  add column if not exists title_en text,
+  add column if not exists title_ru text,
+  add column if not exists description_en text,
+  add column if not exists description_ru text,
+  add column if not exists departure_address text;
+
+-- ============================================================
+-- CARD tours («Հավատարմության քարտ») — the free-tour reward pool,
+-- managed from the loyalty card with the same PIN-gated admin panel.
+-- ============================================================
+create table if not exists public.card_tours (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  region text not null default 'home' check (region in ('home', 'abroad')),
+  days int not null default 3,
+  price numeric not null default 0,
+  image_url text,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table public.card_tours enable row level security;
+
+drop policy if exists "anyone can view card tours" on public.card_tours;
+create policy "anyone can view card tours"
+  on public.card_tours for select
+  using (true);
+
+drop policy if exists "anyone can create card tours" on public.card_tours;
+create policy "anyone can create card tours"
+  on public.card_tours for insert
+  with check (true);
+
+drop policy if exists "anyone can delete card tours" on public.card_tours;
+create policy "anyone can delete card tours"
+  on public.card_tours for delete
+  using (true);
+
 -- ============================================================
 -- Shop purchase audit log.
 -- Each purchase is recorded here. The owner email
@@ -95,7 +137,7 @@ create policy "anyone can record shop orders"
 -- PIN-gated bus reset: deletes every booking so all seats show free again.
 -- RLS blocks direct deletes with the anon key, so the admin panel calls this
 -- function instead; it verifies the staff PIN server-side.
-create or replace function public.reset_bus_bookings(pin text)
+create or replace function public.reset_bus_bookings(pin text, p_tour_id text default null)
 returns void
 language plpgsql
 security definer
@@ -104,11 +146,11 @@ begin
   if pin is distinct from '2011RLOHN' then
     raise exception 'wrong pin';
   end if;
-  delete from public.bookings where true;
+  delete from public.bookings where p_tour_id is null or tour_id = p_tour_id;
 end;
 $$;
 
-grant execute on function public.reset_bus_bookings(text) to anon, authenticated;
+grant execute on function public.reset_bus_bookings(text, text) to anon, authenticated;
 
 -- Loyalty card («Հավատարմության Քարտ») state for signed-in users.
 -- Guests keep the same data in their device's localStorage.

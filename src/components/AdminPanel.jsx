@@ -1,96 +1,317 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../AuthContext.jsx'
-import { STAFF_PIN } from '../data.js'
+import { STAFF_PIN, BUILTIN_BUS_IDS } from '../data.js'
 
-// Admin panel — add or delete tours, gated by the staff PIN (2011RLOHN).
-// Tours are stored in the public.tours table (see supabase-migration.sql).
-// The PIN must be entered once per panel opening (nothing is persisted).
+const fmt = new Intl.NumberFormat('hy-AM')
+
+// Admin panel — add / edit / delete tours, clean bus(es), manage card tours.
+// The staff PIN (2011RLOHN) is required for EVERY action: it arms one action
+// only and re-locks as soon as the action completes, so the next action asks
+// for the PIN again. Tours live in public.tours; card tours in
+// public.card_tours (same schema, separate list) — see supabase-migration.sql.
+const TABLES = { tour: 'tours', card: 'card_tours' }
+
+function PinGate({ t, onSubmit }) {
+  const [pin, setPin] = useState('')
+  const [err, setErr] = useState(false)
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (onSubmit(pin.trim().toUpperCase())) setPin('')
+        else setErr(true)
+      }}
+    >
+      <h3>🔐 {t.admin.pinTitle}</h3>
+      <div className="gate-pin-row">
+        <input
+          className="pin-input"
+          autoComplete="off"
+          autoFocus
+          maxLength={12}
+          placeholder={t.checkout.pinPlaceholder}
+          value={pin}
+          onChange={(e) => {
+            setPin(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, ''))
+            setErr(false)
+          }}
+        />
+        <button type="submit" className="btn btn-primary">{t.checkout.pinSubmit}</button>
+      </div>
+      {err && <div className="pin-error">{t.checkout.pinWrong}</div>}
+    </form>
+  )
+}
+
+// Image field: paste from clipboard (Ctrl+V), drop, or pick a file — the
+// image is embedded as a data URL; a normal URL can also be typed.
+function ImageField({ label, hint, value, onChange }) {
+  const [drag, setDrag] = useState(false)
+  const fileRef = useRef(null)
+  const takeFile = (file) => {
+    if (!file || !file.type.startsWith('image/')) return
+    const reader = new FileReader()
+    reader.onload = () => onChange(String(reader.result))
+    reader.readAsDataURL(file)
+  }
+  useEffect(() => {
+    const onPaste = (e) => {
+      const item = [...(e.clipboardData?.items || [])].find((i) => i.type.startsWith('image/'))
+      if (item) takeFile(item.getAsFile())
+    }
+    window.addEventListener('paste', onPaste)
+    return () => window.removeEventListener('paste', onPaste)
+  })
+  return (
+    <div
+      className={`admin-image-field${drag ? ' drag' : ''}`}
+      onDragOver={(e) => { e.preventDefault(); setDrag(true) }}
+      onDragLeave={() => setDrag(false)}
+      onDrop={(e) => { e.preventDefault(); setDrag(false); takeFile(e.dataTransfer.files?.[0]) }}
+    >
+      <div className="admin-image-preview">
+        {value ? <img src={value} alt="" /> : <span className="admin-image-empty">🖼</span>}
+      </div>
+      <input
+        className="admin-image-url"
+        value={value.startsWith('data:') ? '' : value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="https://…"
+      />
+      <div className="admin-image-actions">
+        <button type="button" className="btn btn-ghost" onClick={() => fileRef.current?.click()}>
+          📁 {label}
+        </button>
+        {value && (
+          <button type="button" className="btn btn-ghost" onClick={() => onChange('')}>
+            ✕
+          </button>
+        )}
+      </div>
+      <span className="t-sub">{hint}</span>
+      <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => takeFile(e.target.files?.[0])} />
+    </div>
+  )
+}
+
+const EMPTY_FORM = {
+  title: '', titleEn: '', titleRu: '',
+  description: '', descriptionEn: '', descriptionRu: '',
+  departureAddress: '', region: 'home', days: '3', price: '', imageUrl: '',
+}
+
+function formFromRow(row) {
+  return {
+    title: row.title || '',
+    titleEn: row.title_en || '',
+    titleRu: row.title_ru || '',
+    description: row.description || '',
+    descriptionEn: row.description_en || '',
+    descriptionRu: row.description_ru || '',
+    departureAddress: row.departure_address || '',
+    region: row.region || 'home',
+    days: String(row.days || 3),
+    price: String(row.price ?? ''),
+    imageUrl: row.image_url || '',
+  }
+}
+
+function TourForm({ initial, editing, saving, onSave, onCancel, t }) {
+  const [form, setForm] = useState(initial)
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); onSave(form) }} className="admin-form">
+      <h3>{editing ? `✏️ ${t.admin.editTour}` : `➕ ${t.admin.addTour}`}</h3>
+
+      <label className="field">
+        <span>{t.admin.name} (AM)</span>
+        <input value={form.title} onChange={set('title')} required />
+      </label>
+      <label className="field">
+        <span>{t.admin.name} (EN)</span>
+        <input value={form.titleEn} onChange={set('titleEn')} placeholder={form.title} />
+      </label>
+      <label className="field">
+        <span>{t.admin.name} (RU)</span>
+        <input value={form.titleRu} onChange={set('titleRu')} placeholder={form.title} />
+      </label>
+
+      <label className="field">
+        <span>{t.admin.desc} (AM)</span>
+        <textarea value={form.description} onChange={set('description')} rows={2} />
+      </label>
+      <label className="field">
+        <span>{t.admin.desc} (EN)</span>
+        <textarea value={form.descriptionEn} onChange={set('descriptionEn')} rows={2} />
+      </label>
+      <label className="field">
+        <span>{t.admin.desc} (RU)</span>
+        <textarea value={form.descriptionRu} onChange={set('descriptionRu')} rows={2} />
+      </label>
+
+      <div className="admin-row">
+        <label className="field">
+          <span>{t.admin.category}</span>
+          <select value={form.region} onChange={set('region')}>
+            <option value="home">{t.admin.home}</option>
+            <option value="abroad">{t.admin.abroad}</option>
+          </select>
+        </label>
+        <label className="field">
+          <span>{t.admin.days}</span>
+          <input inputMode="numeric" value={form.days} onChange={(e) => setForm((f) => ({ ...f, days: e.target.value.replace(/\D/g, '').slice(0, 2) }))} required />
+        </label>
+      </div>
+      <label className="field">
+        <span>{t.admin.price}</span>
+        <input inputMode="numeric" value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: e.target.value.replace(/\D/g, '').slice(0, 9) }))} required />
+      </label>
+      <label className="field">
+        <span>{t.admin.departure}</span>
+        <input value={form.departureAddress} onChange={set('departureAddress')} placeholder={t.checkout.departureAddress} />
+      </label>
+      <span className="field-label">{t.admin.image}</span>
+      <ImageField
+        label={t.admin.imageFile}
+        hint={t.admin.imageHint}
+        value={form.imageUrl}
+        onChange={(v) => setForm((f) => ({ ...f, imageUrl: v }))}
+      />
+
+      <div className="checkout-actions">
+        <button type="button" className="btn btn-ghost" onClick={onCancel}>{t.admin.cancel}</button>
+        <button type="submit" className="btn btn-primary" disabled={saving}>{t.admin.save}</button>
+      </div>
+    </form>
+  )
+}
+
+function TourList({ heading, sub, tours, picked, onPick, t, actions }) {
+  return (
+    <div className="admin-form">
+      <h3>{heading}</h3>
+      <p className="t-sub">{sub}</p>
+      {tours === null ? (
+        <p>…</p>
+      ) : tours.length === 0 ? (
+        <p className="t-sub">—</p>
+      ) : (
+        <ul className="admin-tour-list">
+          {tours.map((row) => (
+            <li key={row.id}>
+              <label className="admin-tour-item">
+                <input type="radio" name="admin-pick" checked={picked === row.id} onChange={() => onPick(row.id)} />
+                <span>
+                  <strong>{row.title}</strong>
+                  <em>
+                    {row.region === 'abroad' ? t.admin.abroad : t.admin.home} · {row.days} {t.checkout.daysWord} · {fmt.format(Number(row.price) || 0)} ֏
+                  </em>
+                </span>
+              </label>
+            </li>
+          ))}
+        </ul>
+      )}
+      {actions}
+    </div>
+  )
+}
+
 export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
   const { supabase } = useAuth()
+  const [mode, setMode] = useState('pin') // 'pin' | 'add' | 'edit' | 'delete' | 'bus' | 'addCard' | 'delCard'
   const [unlocked, setUnlocked] = useState(false)
-  const [mode, setMode] = useState(initialMode) // 'add' | 'delete' | 'bus'
-  const [pin, setPin] = useState('')
-  const [pinError, setPinError] = useState(false)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState(null) // { kind: 'ok' | 'err', text }
+  const [tours, setTours] = useState(null) // rows of the active table
+  const [picked, setPicked] = useState(null) // id picked for edit/delete
+  const [formOpen, setFormOpen] = useState(false) // edit mode: form shown?
+  const [busTour, setBusTour] = useState('') // '' = every bus
 
-  // 'add' form state
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [region, setRegion] = useState('home')
-  const [days, setDays] = useState('3')
-  const [price, setPrice] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
-
-  // 'delete' state
-  const [tours, setTours] = useState(null)
-  const [picked, setPicked] = useState(null)
-
-  useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  // The PIN arms ONE action. Completing it (or canceling) re-locks, so the
+  // next action asks for the PIN again.
+  const wantMode = () => {
+    setMode('pin')
+    setUnlocked(false)
+    setPicked(null)
+    setTours(null)
+    setFormOpen(false)
+  }
 
   const notify = (kind, text) => {
     setMsg({ kind, text })
     setTimeout(() => setMsg(null), 4000)
   }
 
-  const submitPin = (e) => {
-    e.preventDefault()
-    if (pin.trim().toUpperCase() === STAFF_PIN) {
-      setUnlocked(true)
-      setPinError(false)
-      setPin('')
-    } else {
-      setPinError(true)
-    }
-  }
+  const activeTable = ['addCard', 'delCard'].includes(mode) ? TABLES.card : TABLES.tour
 
-  // Load the DB tours when the delete view opens.
-  useEffect(() => {
-    if (!unlocked || mode !== 'delete') return
-    let alive = true
+  const loadTours = (table) => {
+    setTours(null)
     supabase
-      .from('tours')
+      .from(table || activeTable)
       .select('*')
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
-        if (!alive) return
         if (error) notify('err', error.message)
         setTours(data || [])
       })
-    return () => {
-      alive = false
-    }
-  }, [unlocked, mode, supabase])
+  }
 
-  const addTour = async (e) => {
-    e.preventDefault()
+  // Pin accepted → unlock the armed action (the mode chosen from the buttons).
+  const acceptPin = (pin) => {
+    if (pin !== STAFF_PIN) return false
+    setUnlocked(true)
+    setMode(initialMode)
+    if (['edit', 'delete', 'delCard'].includes(initialMode)) {
+      loadTours(['delCard'].includes(initialMode) ? TABLES.card : TABLES.tour)
+    }
+    return true
+  }
+
+  const rowFromForm = (form) => ({
+    title: form.title.trim(),
+    title_en: form.titleEn.trim() || null,
+    title_ru: form.titleRu.trim() || null,
+    description: form.description.trim() || null,
+    description_en: form.descriptionEn.trim() || null,
+    description_ru: form.descriptionRu.trim() || null,
+    departure_address: form.departureAddress.trim() || null,
+    region: form.region,
+    days: Number(form.days) || 3,
+    price: Number(form.price) || 0,
+    image_url: form.imageUrl.trim() || null,
+  })
+
+  const saveTour = async (form) => {
     setBusy(true)
-    const { error } = await supabase.from('tours').insert({
-      title: title.trim(),
-      description: description.trim() || null,
-      region,
-      days: Number(days) || 3,
-      price: Number(price) || 0,
-      image_url: imageUrl.trim() || null,
-    })
+    const editing = mode === 'edit' && picked
+    const values = rowFromForm(form)
+    let res = editing
+      ? await supabase.from(activeTable).update(values).eq('id', picked)
+      : await supabase.from(activeTable).insert(values)
+    // Older schema without the new columns: retry without them so the
+    // tour itself is never lost (localized fields need the migration).
+    if (res.error && /(title_en|title_ru|description_en|description_ru|departure_address)/i.test(res.error.message || '')) {
+      const { title_en, title_ru, description_en, description_ru, departure_address, ...rest } = values
+      res = editing
+        ? await supabase.from(activeTable).update(rest).eq('id', picked)
+        : await supabase.from(activeTable).insert(rest)
+    }
     setBusy(false)
-    if (error) {
-      notify('err', error.message || t.admin.failed)
+    if (res.error) {
+      notify('err', res.error.message || t.admin.failed)
       return
     }
-    setTitle(''); setDescription(''); setPrice(''); setImageUrl(''); setDays('3'); setRegion('home')
-    notify('ok', `✅ ${t.admin.saved}`)
+    notify('ok', `✅ ${editing ? t.admin.updated : t.admin.saved}`)
+    // Re-lock: the next action needs the PIN again.
+    wantMode()
     if (onSaved) onSaved()
   }
 
   const deleteTour = async () => {
     if (!picked) return
     setBusy(true)
-    const { error } = await supabase.from('tours').delete().eq('id', picked)
+    const { error } = await supabase.from(activeTable).delete().eq('id', picked)
     setBusy(false)
     if (error) {
       notify('err', error.message || t.admin.failed)
@@ -99,21 +320,31 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
     setTours((rows) => rows.filter((r) => r.id !== picked))
     setPicked(null)
     notify('ok', `🗑 ${t.admin.deleted}`)
+    // Re-lock: deleting another tour asks for the PIN again.
+    wantMode()
     if (onSaved) onSaved()
   }
 
-  // Wipe every booking so all bus seats show free again. RLS blocks direct
-  // deletes with the anon key, so this goes through the PIN-checked RPC.
+  // Wipe bookings so the chosen bus's seats show free again. RLS blocks
+  // direct deletes with the anon key, so this goes through the PIN-checked
+  // RPC, which accepts an optional tour filter.
   const cleanBus = async () => {
     setBusy(true)
-    const { error } = await supabase.rpc('reset_bus_bookings', { pin: STAFF_PIN })
+    const { error } = await supabase.rpc('reset_bus_bookings', {
+      pin: STAFF_PIN,
+      p_tour_id: busTour || null,
+    })
     setBusy(false)
     if (error) {
       notify('err', error.message || t.admin.failed)
       return
     }
     notify('ok', `🚌 ${t.admin.busCleaned}`)
+    wantMode()
   }
+
+  const formInitial = mode === 'edit' && picked ? formFromRow((tours || []).find((r) => r.id === picked)) : EMPTY_FORM
+  const editReady = mode === 'edit' && picked && formOpen
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -127,100 +358,92 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
           {msg && <div className={`silver-msg ${msg.kind}`}>{msg.text}</div>}
 
           {!unlocked ? (
-            <>
-              <h3>🔐 {t.admin.pinTitle}</h3>
-              <form onSubmit={submitPin} className="gate-pin-row">
-                <input
-                  className="pin-input"
-                  autoComplete="off"
-                  autoFocus
-                  maxLength={12}
-                  placeholder={t.checkout.pinPlaceholder}
-                  value={pin}
-                  onChange={(e) => {
-                    setPin(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, ''))
-                    setPinError(false)
-                  }}
-                />
-                <button type="submit" className="btn btn-primary">{t.checkout.pinSubmit}</button>
-              </form>
-              {pinError && <div className="pin-error">{t.checkout.pinWrong}</div>}
-            </>
-          ) : mode === 'add' ? (
-            <form onSubmit={addTour} className="admin-form">
-              <h3>➕ {t.admin.addTour}</h3>
-              <label className="field">
-                <span>{t.admin.name}</span>
-                <input value={title} onChange={(e) => setTitle(e.target.value)} required />
-              </label>
-              <label className="field">
-                <span>{t.admin.desc}</span>
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
-              </label>
-              <div className="admin-row">
-                <label className="field">
-                  <span>{t.admin.category}</span>
-                  <select value={region} onChange={(e) => setRegion(e.target.value)}>
-                    <option value="home">{t.admin.home}</option>
-                    <option value="abroad">{t.admin.abroad}</option>
-                  </select>
-                </label>
-                <label className="field">
-                  <span>{t.admin.days}</span>
-                  <input inputMode="numeric" value={days} onChange={(e) => setDays(e.target.value.replace(/\D/g, '').slice(0, 2))} required />
-                </label>
-              </div>
-              <label className="field">
-                <span>{t.admin.price}</span>
-                <input inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, '').slice(0, 9))} required />
-              </label>
-              <label className="field">
-                <span>{t.admin.image}</span>
-                <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://…" />
-                <span className="t-sub">{t.admin.imageHint}</span>
-              </label>
-              <div className="checkout-actions">
-                <button type="button" className="btn btn-ghost" onClick={onClose}>{t.admin.cancel}</button>
-                <button type="submit" className="btn btn-primary" disabled={busy}>{t.admin.save}</button>
-              </div>
-            </form>
-          ) : mode === 'bus' ? (
+            <PinGate t={t} onSubmit={acceptPin} />
+          ) : mode === 'add' || mode === 'addCard' ? (
+            <TourForm
+              key="new"
+              initial={EMPTY_FORM}
+              editing={false}
+              saving={busy}
+              onSave={saveTour}
+              onCancel={onClose}
+              t={t}
+            />
+          ) : mode === 'edit' ? (
+            tours === null ? (
+              <p>…</p>
+            ) : editReady ? (
+              <TourForm
+                key={picked}
+                initial={formInitial}
+                editing
+                saving={busy}
+                onSave={saveTour}
+                onCancel={() => { setFormOpen(false); loadTours(TABLES.tour) }}
+                t={t}
+              />
+            ) : (
+              <TourList
+                heading={`✏️ ${t.admin.editTour}`}
+                sub={t.admin.pickEdit}
+                tours={tours}
+                picked={picked}
+                onPick={setPicked}
+                t={t}
+                actions={
+                  <div className="checkout-actions">
+                    <button type="button" className="btn btn-ghost" onClick={onClose}>{t.admin.cancel}</button>
+                    <button type="button" className="btn btn-primary" disabled={!picked} onClick={() => setFormOpen(true)}>
+                      ✏️ {t.admin.editTour}
+                    </button>
+                  </div>
+                }
+              />
+            )
+          ) : mode === 'delete' || mode === 'delCard' ? (
+            <TourList
+              heading={`🗑 ${t.admin.deleteTour}`}
+              sub={t.admin.pick}
+              tours={tours}
+              picked={picked}
+              onPick={setPicked}
+              t={t}
+              actions={
+                <div className="checkout-actions">
+                  <button type="button" className="btn btn-ghost" onClick={onClose}>{t.admin.cancel}</button>
+                  <button type="button" className="btn btn-primary" disabled={!picked || busy} onClick={deleteTour}>
+                    🗑 {t.admin.deleteTour}
+                  </button>
+                </div>
+              }
+            />
+          ) : (
             <div className="admin-form">
               <h3>🚌 {t.admin.cleanBus}</h3>
-              <p className="t-sub">{t.admin.confirmClean}</p>
+              <label className="field">
+                <span>{t.admin.busToClean}</span>
+                <select value={busTour} onChange={(e) => setBusTour(e.target.value)}>
+                  <option value="">{t.admin.allBuses}</option>
+                  {BUILTIN_BUS_IDS.map((id) => (
+                    <option key={id} value={id}>{t.tours[id]?.title || id}</option>
+                  ))}
+                  {(tours || []).map((row) => (
+                    <option key={row.id} value={`db:${row.id}`}>{row.title}</option>
+                  ))}
+                </select>
+              </label>
+              <p className="t-sub">
+                {busTour
+                  ? `${t.admin.confirmClean}: «${
+                      busTour.startsWith('db:')
+                        ? (tours || []).find((r) => r.id === busTour.slice(3))?.title || busTour
+                        : t.tours[busTour]?.title || busTour
+                    }»`
+                  : t.admin.confirmClean}
+              </p>
               <div className="checkout-actions">
                 <button type="button" className="btn btn-ghost" onClick={onClose}>{t.admin.cancel}</button>
                 <button type="button" className="btn btn-primary" onClick={cleanBus} disabled={busy}>{t.admin.cleanBus}</button>
-              </div>
-            </div>
-          ) : (
-            <div className="admin-form">
-              <h3>🗑 {t.admin.deleteTour}</h3>
-              <p className="t-sub">{t.admin.pick}</p>
-              {tours === null ? (
-                <p>…</p>
-              ) : tours.length === 0 ? (
-                <p className="t-sub">—</p>
-              ) : (
-                <ul className="admin-tour-list">
-                  {tours.map((row) => (
-                    <li key={row.id}>
-                      <label className="admin-tour-item">
-                        <input type="radio" name="admin-del" checked={picked === row.id} onChange={() => setPicked(row.id)} />
-                        <span>
-                          <strong>{row.title}</strong>
-                          <em>
-                            {row.region === 'abroad' ? t.admin.abroad : t.admin.home} · {row.days} {t.checkout.daysWord} · {Number(row.price).toLocaleString('hy-AM')} ֏
-                          </em>
-                        </span>
-                      </label>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <div className="checkout-actions">
-                <button type="button" className="btn btn-ghost" onClick={onClose}>{t.admin.cancel}</button>
-                <button type="button" className="btn btn-primary" onClick={deleteTour} disabled={!picked || busy}>{t.admin.deleteTour}</button>
               </div>
             </div>
           )}
@@ -230,13 +453,16 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
   )
 }
 
-// The two admin buttons shown on the main page.
+// The admin buttons shown on the main page.
 export function AdminEntry({ t, onSaved }) {
-  const [open, setOpen] = useState(null) // 'add' | 'delete' | null
+  const [open, setOpen] = useState(null) // 'add' | 'edit' | 'delete' | 'bus' | null
   return (
     <div className="admin-entry">
       <button type="button" className="btn btn-ghost admin-btn" onClick={() => setOpen('add')}>
         ➕ {t.admin.addTour}
+      </button>
+      <button type="button" className="btn btn-ghost admin-btn" onClick={() => setOpen('edit')}>
+        ✏️ {t.admin.editTour}
       </button>
       <button type="button" className="btn btn-ghost admin-btn" onClick={() => setOpen('delete')}>
         🗑 {t.admin.deleteTour}

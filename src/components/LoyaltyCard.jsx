@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../AuthContext.jsx'
-import { STAFF_PIN, TOURS } from '../data.js'
+import { STAFF_PIN, TOURS, tourInfo } from '../data.js'
 import {
   getGuestStars,
   setGuestStars,
@@ -9,6 +9,7 @@ import {
   getGuestCardNo,
   cardNoForUser,
 } from '../loyalty.js'
+import AdminPanel from './AdminPanel.jsx'
 import mainLogo from '../assets/main-logo.jpeg'
 
 const TOTAL_STARS = 10
@@ -18,6 +19,9 @@ const TOTAL_STARS = 10
 //   loyalty_activated — see supabase-migration.sql).
 // • Without an account: the card is activated with the staff PIN and all
 //   progress lives in this device's localStorage.
+// The free-tour reward comes from the CARD-SPECIFIC tour list (card_tours
+// table), managed with the ➕/🗑 card-tour buttons on this card — each of
+// those opens the admin panel which asks for the PIN every time.
 export default function LoyaltyCard({ t, onClose }) {
   const { user, supabase, profile } = useAuth()
   const [stars, setStars] = useState(0)
@@ -28,6 +32,8 @@ export default function LoyaltyCard({ t, onClose }) {
   const [pinError, setPinError] = useState(false)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState(null) // { kind: 'ok' | 'err', text }
+  const [cardTours, setCardTours] = useState(null) // null = not loaded
+  const [adminMode, setAdminMode] = useState(null) // 'addCard' | 'delCard' | null
 
   const notify = (kind, text) => {
     setMsg({ kind, text })
@@ -46,6 +52,18 @@ export default function LoyaltyCard({ t, onClose }) {
       setActivated(getGuestActivated())
     }
   }, [user, profile])
+
+  // The reward picker lists the CARD tours (card_tours table); when none
+  // exist (or the table isn't migrated yet) it falls back to regular tours.
+  const loadCardTours = () => {
+    supabase
+      .from('card_tours')
+      .select('*')
+      .then(({ data }) => {
+        setCardTours(Array.isArray(data) ? data : [])
+      })
+  }
+  useEffect(loadCardTours, [supabase])
 
   const persist = async (nextStars, nextActivated) => {
     setStars(nextStars)
@@ -89,8 +107,23 @@ export default function LoyaltyCard({ t, onClose }) {
     // Reward claimed — restart the cycle so the card can be filled again.
     persist(0, true)
     if (!user) localStorage.setItem('loyalty_reward', tour.id)
-    notify('ok', `🎁 ${t.loyalty.rewardChosen}: ${t.tours[tour.id].title}`)
+    notify('ok', `🎁 ${t.loyalty.rewardChosen}: ${tourInfo(tour, 'hy', t).title}`)
   }
+
+  const rewardTours =
+    cardTours && cardTours.length > 0
+      ? cardTours
+          .filter((row) => row.active !== false)
+          .map((row) => ({
+            id: `db:${row.id}`,
+            dbId: row.id,
+            title: row.title,
+            titleEn: row.title_en,
+            titleRu: row.title_ru,
+            description: row.description,
+            days: Number(row.days) || 3,
+          }))
+      : TOURS
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -161,15 +194,41 @@ export default function LoyaltyCard({ t, onClose }) {
           {activated && stars >= TOTAL_STARS && (
             <div className="loyalty-reward">
               <h3>🎁 {t.loyalty.rewardTitle}</h3>
+              {cardTours !== null && cardTours.length === 0 && (
+                <p className="t-sub">{t.loyalty.noCardTours}</p>
+              )}
               <div className="loyalty-reward-grid">
-                {TOURS.map((tour) => (
-                  <button key={tour.id} type="button" className="loyalty-reward-item" onClick={() => pickTour(tour)}>
-                    <strong>{t.tours[tour.id].title}</strong>
-                    <em>{t.tours[tour.id].duration}</em>
-                  </button>
-                ))}
+                {rewardTours.map((tour) => {
+                  const info = tour.dbId ? tourInfo(tour, 'hy', t) : t.tours[tour.id]
+                  return (
+                    <button key={tour.id} type="button" className="loyalty-reward-item" onClick={() => pickTour(tour)}>
+                      <strong>{info.title}</strong>
+                      <em>{info.duration}</em>
+                    </button>
+                  )
+                })}
               </div>
             </div>
+          )}
+
+          {/* Card-tour management — same admin panel as the regular tour
+              buttons, working on the card_tours list. PIN asked every time. */}
+          <div className="loyalty-manage">
+            <button type="button" className="btn btn-ghost admin-btn" onClick={() => setAdminMode('addCard')}>
+              ➕ {t.admin.addCardTour}
+            </button>
+            <button type="button" className="btn btn-ghost admin-btn" onClick={() => setAdminMode('delCard')}>
+              🗑 {t.admin.removeCardTour}
+            </button>
+          </div>
+
+          {adminMode && (
+            <AdminPanel
+              t={t}
+              initialMode={adminMode}
+              onClose={() => setAdminMode(null)}
+              onSaved={loadCardTours}
+            />
           )}
 
           {pinMode && (

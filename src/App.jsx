@@ -105,7 +105,7 @@ export default function App() {
       </div>
 
       <main style={{ flex: 1 }}>
-        <TourGrid days={days} onOpen={setSelectedTour} t={t} />
+        <TourGrid days={days} onOpen={setSelectedTour} lang={lang} t={t} />
       </main>
 
       <footer className="site-footer">
@@ -133,6 +133,7 @@ export default function App() {
       {selectedTour && (
         <TourModal
           tour={selectedTour}
+          lang={lang}
           t={t}
           onClose={() => setSelectedTour(null)}
           onBuy={() => {

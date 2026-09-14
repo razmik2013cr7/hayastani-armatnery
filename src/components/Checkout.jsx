@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { BUS_SEAT_ROWS, CATEGORIES, EXTRAS, PAYMENT_METHODS, STAFF_PIN, TOUR_TYPES, TAKEN_SEATS, tourPriceForDays } from '../data.js'
+import { BUS_SEAT_ROWS, CATEGORIES, EXTRAS, PAYMENT_METHODS, STAFF_PIN, TOUR_TYPES, TAKEN_SEATS, extraPrice, tourPriceForDays } from '../data.js'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
 import { lockPin, usePinUnlocked } from '../pinAccess.js'
@@ -19,10 +19,13 @@ function formatExpiry(value) {
   return `${digits.slice(0, 2)}/${digits.slice(2)}`
 }
 
-function OptionRow({ icon, label, price, info, plans, plansI18n, plan, setPlan, value, onChange, t }) {
+function OptionRow({ icon, label, extra, info, plansI18n, plan, setPlan, value, onChange, days, t }) {
   const [open, setOpen] = useState(false)
-  // The card head shows the price of the chosen plan when it overrides the base.
-  const activePrice = plans?.find((p) => p.id === plan)?.price ?? price
+  // The card head shows the price of the chosen plan for the trip length —
+  // per-day extras (food) multiply by the days.
+  const { plans, price } = extra
+  const activePrice = extraPrice(extra, plan, days)
+  const perDayNote = activePrice !== (plans?.find((p) => p.id === plan)?.price ?? price)
   return (
     <div className={`option-card${value ? ' chosen' : ''}`}>
       <button
@@ -33,7 +36,9 @@ function OptionRow({ icon, label, price, info, plans, plansI18n, plan, setPlan, 
       >
         <span className="opt-icon" aria-hidden="true">{icon}</span>
         <span className="option-name">{label}</span>
-        <span className="opt-price">+{fmt.format(activePrice)} ֏</span>
+        <span className="opt-price">
+          +{fmt.format(activePrice)} ֏{perDayNote && <em className="opt-perday"> ({fmt.format(price)}×{days})</em>}
+        </span>
         <span className={`opt-badge${value ? ' on' : ''}`}>
           {value ? t.checkout.included : t.checkout.notIncluded}
         </span>
@@ -52,19 +57,24 @@ function OptionRow({ icon, label, price, info, plans, plansI18n, plan, setPlan, 
                     : t.checkout.cottagePlansTitle}
               </div>
               <div className="plan-opts">
-                {plans.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    className={`plan-opt${plan === p.id ? ' active' : ''}`}
-                    onClick={() => setPlan(p.id)}
-                  >
-                    <span>{t.checkout[plansI18n][p.id]}</span>
-                    {p.price != null && (
-                      <span className="plan-price">{fmt.format(p.price)} ֏</span>
-                    )}
-                  </button>
-                ))}
+                {plans.map((p) => {
+                  const pPrice = extraPrice(extra, p.id, days)
+                  const pBase = p.price ?? price
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      className={`plan-opt${plan === p.id ? ' active' : ''}`}
+                      onClick={() => setPlan(p.id)}
+                    >
+                      <span>{t.checkout[plansI18n][p.id]}</span>
+                      <span className="plan-price">
+                        +{fmt.format(pPrice)} ֏
+                        {pPrice !== pBase && <em className="opt-perday"> ({fmt.format(pBase)}×{days})</em>}
+                      </span>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -85,7 +95,7 @@ function OptionRow({ icon, label, price, info, plans, plansI18n, plan, setPlan, 
   )
 }
 
-function DepartureCard({ t }) {
+function DepartureCard({ t, address }) {
   const [open, setOpen] = useState(false)
   return (
     <div className="option-card depart">
@@ -97,7 +107,7 @@ function DepartureCard({ t }) {
       >
         <span className="opt-icon" aria-hidden="true">📍</span>
         <span className="option-name">{t.checkout.departure}</span>
-        <span className="opt-price depart-addr">{t.checkout.departureAddress}</span>
+        <span className="opt-price depart-addr">{address}</span>
         <span className="opt-chevron" aria-hidden="true">{open ? '▴' : '▾'}</span>
       </button>
       {open && (
@@ -144,20 +154,20 @@ function StepOptions({ tour, options, setOptions, planChoices, setPlanChoices, t
             key={ex.key}
             icon={ex.icon}
             label={t.checkout[ex.key]}
-            price={ex.price}
+            extra={ex}
             info={t.checkout.extrasInfo[ex.key]}
-            plans={ex.plans}
             plansI18n={ex.plansI18n}
             plan={planChoices[ex.key]}
             setPlan={(id) => setPlanChoices((c) => ({ ...c, [ex.key]: id }))}
             value={options[ex.key]}
             onChange={(v) => setOptions((o) => ({ ...o, [ex.key]: v }))}
+            days={days}
             t={t}
           />
         ))}
       </div>
 
-      <DepartureCard t={t} />
+      <DepartureCard t={t} address={tour.dbId && tour.departureAddress ? tour.departureAddress : t.checkout.departureAddress} />
 
       <div className="total-bar">
         <span>{t.checkout.total}</span>
@@ -311,26 +321,32 @@ function StepPayment({ method, setMethod, card, setCard, school, setSchool, tour
 
 // Ask the database which seats of this tour are already booked.
 // Falls back to the demo list when the table isn't reachable (schema not applied yet).
+// Tries the rich column set first (for the taken-seats info panel); older
+// schemas without those columns fall back to the minimal set.
+const SEAT_COLS_FULL = 'seats, buyer_name, payment_method, days, total_amd, school_info, created_at'
+const SEAT_COLS_MIN = 'seats, buyer_name, created_at'
+
 function useTakenSeats(tourId, supabase) {
   const [taken, setTaken] = useState({ seats: TAKEN_SEATS, live: false })
 
   useEffect(() => {
     let alive = true
-    const load = () => {
-      supabase
-        .from('bookings')
-        .select('seats, buyer_name, created_at')
-        .eq('tour_id', tourId)
-        .then(({ data, error }) => {
-          if (!alive) return
-          if (!error && Array.isArray(data)) {
-            const bySeat = {}
-            for (const b of data) {
-              if (b.seats) bySeat[String(b.seats).trim().toUpperCase()] = b.buyer_name || null
-            }
-            setTaken({ seats: bySeat, live: true })
-          }
-        })
+    const load = async () => {
+      let rows = null
+      let res = await supabase.from('bookings').select(SEAT_COLS_FULL).eq('tour_id', tourId)
+      if (res.error) {
+        // Older schema — retry with the minimal columns.
+        res = await supabase.from('bookings').select(SEAT_COLS_MIN).eq('tour_id', tourId)
+      }
+      if (!res.error && Array.isArray(res.data)) rows = res.data
+      if (!alive) return
+      if (rows) {
+        const bySeat = {}
+        for (const b of rows) {
+          if (b.seats) bySeat[String(b.seats).trim().toUpperCase()] = b
+        }
+        setTaken({ seats: bySeat, live: true })
+      }
     }
     load()
     const timer = setInterval(load, 10000)
@@ -389,15 +405,50 @@ function PinOverlay({ seat, error, onSubmit, onClose, t }) {
   )
 }
 
+// One-row PIN form used inside the taken-seats info panel. Calls back with
+// (pin, setError) and stays open on a wrong PIN.
+function PinGateInline({ title, onSubmit, t }) {
+  const [pin, setPin] = useState('')
+  const [err, setErr] = useState(false)
+  return (
+    <form
+      className="taken-info-gate"
+      onSubmit={(e) => {
+        e.preventDefault()
+        onSubmit(pin.trim(), undefined, setErr)
+        if (!err) setPin('')
+      }}
+    >
+      <span className="taken-info-gate-label">🔐 {title}</span>
+      <input
+        className="pin-input"
+        autoComplete="off"
+        autoFocus
+        maxLength={12}
+        placeholder={t.checkout.pinPlaceholder}
+        value={pin}
+        onChange={(e) => {
+          setPin(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, ''))
+          setErr(false)
+        }}
+      />
+      <button type="submit" className="btn btn-primary">{t.checkout.pinSubmit}</button>
+      {err && <div className="pin-error">{t.checkout.pinWrong}</div>}
+    </form>
+  )
+}
+
 function StepSeats({ tour, seat, setSeat, onBack, onFinish, t }) {
   const { supabase } = useAuth()
   const taken = useTakenSeats(tour.id, supabase)
   const [pinSeat, setPinSeat] = useState(null) // taken seat being inspected
   const [pinError, setPinError] = useState(null)
-  const [pinOwner, setPinOwner] = useState(null) // { seat, name }
+  const [pinOwner, setPinOwner] = useState(null) // { seat, booking }
+  const [infoOpen, setInfoOpen] = useState(false)
+  const [infoUnlocked, setInfoUnlocked] = useState(false)
 
   const isTaken = (id) => (taken.live ? !!taken.seats[id] : taken.seats.includes(id))
-  const ownerOf = (id) => (taken.live ? taken.seats[id] : null)
+  const bookingOf = (id) => (taken.live ? taken.seats[id] : null)
 
   const handlePinSubmit = (pin) => {
     if (pin !== STAFF_PIN) {
@@ -405,8 +456,18 @@ function StepSeats({ tour, seat, setSeat, onBack, onFinish, t }) {
       return
     }
     setPinError(null)
-    setPinOwner({ seat: pinSeat, name: ownerOf(pinSeat) })
+    setPinOwner({ seat: pinSeat, booking: bookingOf(pinSeat) })
     setPinSeat(null)
+  }
+
+  // One-line summary of a booking for the taken-seats info panel.
+  const describeBooking = (b) => {
+    const parts = [b.buyer_name || t.checkout.ownerUnknown]
+    if (b.school_info) parts.push(b.school_info)
+    else if (b.payment_method === 'school') parts.push(t.checkout.schoolInfo)
+    if (b.days) parts.push(`${b.days} ${t.checkout.daysWord}`)
+    if (b.total_amd) parts.push(`${fmt.format(b.total_amd)} ֏`)
+    return parts.join(' · ')
   }
 
   const renderSeat = (id) => {
@@ -433,6 +494,8 @@ function StepSeats({ tour, seat, setSeat, onBack, onFinish, t }) {
     )
   }
 
+  const takenList = taken.live ? Object.entries(taken.seats) : []
+
   return (
     <div>
       <h3>{t.checkout.step3}</h3>
@@ -442,9 +505,42 @@ function StepSeats({ tour, seat, setSeat, onBack, onFinish, t }) {
         <span className="legend-item"><span className="legend-swatch selected" /> {t.checkout.seatLegendSelected}</span>
       </div>
 
+      {taken.live && takenList.length > 0 && (
+        <button type="button" className="btn btn-ghost taken-info-btn" onClick={() => setInfoOpen((o) => !o)}>
+          👥 {t.checkout.takenInfo} ({takenList.length}) ▾
+        </button>
+      )}
+
+      {infoOpen && taken.live && takenList.length > 0 && (
+        !infoUnlocked ? (
+          <PinGateInline
+            title={t.checkout.takenInfo}
+            onSubmit={(pin, ok, err) => {
+              if (pin === STAFF_PIN) {
+                setInfoUnlocked(true)
+                err(false)
+              } else {
+                err(true)
+              }
+            }}
+            t={t}
+          />
+        ) : (
+          <ul className="taken-info-list">
+            {takenList.map(([seatId, b]) => (
+              <li key={seatId}>
+                <strong>{seatId}</strong>
+                <span>{describeBooking(b)}</span>
+              </li>
+            ))}
+          </ul>
+        )
+      )}
+
       {pinOwner && (
         <div className="pin-owner-box">
-          <span aria-hidden="true">👤</span> {t.checkout.seat} <strong>{pinOwner.seat}</strong> — {pinOwner.name || t.checkout.ownerUnknown}
+          <span aria-hidden="true">👤</span> {t.checkout.seat} <strong>{pinOwner.seat}</strong> —
+          {' '}{pinOwner.booking ? describeBooking(pinOwner.booking) : t.checkout.ownerUnknown}
         </div>
       )}
 
@@ -517,7 +613,7 @@ function Ticket({ tour, days, options, planChoices, seat, card, method, school, 
           <div className="ticket-fields">
             <div className="t-field">
               <div className="t-label">{t.checkout.departure}</div>
-              <div className="t-value">{t.checkout.departureAddress}</div>
+              <div className="t-value">{tour.dbId && tour.departureAddress ? tour.departureAddress : t.checkout.departureAddress}</div>
             </div>
             <div className="t-field">
               <div className="t-label">{t.modal.duration}</div>
@@ -645,12 +741,12 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
   const needsDayChoice = categoryDays == null
 
   // Whole-tour price = base price for the chosen length + extras + tour-type surcharge.
-  // An extra whose chosen plan defines its own price uses that instead of the base.
+  // Food is a per-day rate (8000 × days); plans with their own price use it.
   const total = useMemo(() => {
     let sum = tourPriceForDays(tour, days)
     for (const ex of EXTRAS) {
       if (!options[ex.key]) continue
-      sum += ex.plans?.find((p) => p.id === planChoices[ex.key])?.price ?? ex.price
+      sum += extraPrice(ex, planChoices[ex.key], days)
     }
     sum += TOUR_TYPES.find((ty) => ty.id === tourType)?.price ?? 0
     return sum
@@ -784,14 +880,24 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
                     cottage: options.cottage,
                     cottage_plan: options.cottage ? planChoices.cottage : null,
                     payment_method: method?.id ?? null,
+                    school_info:
+                      method?.type === 'school'
+                        ? [
+                            [school.firstName, school.lastName].filter(Boolean).join(' '),
+                            school.class && `${t.checkout.schoolClass}: ${school.class}`,
+                            school.school && `${t.checkout.schoolSchool}: ${school.school}`,
+                            school.stream && `${t.checkout.schoolStream}: ${school.stream}`,
+                            school.teacher && `${t.checkout.schoolTeacher}: ${school.teacher}`,
+                          ].filter(Boolean).join(', ')
+                        : null,
                     total_amd: total,
                     card_last4: card.number.replace(/\D/g, '').slice(-4) || null,
                   }
                   let res = await supabase.from('bookings').insert(booking)
-                  // Older schema without the plan columns: retry without them
-                  // so the booking itself is never lost.
-                  if (res.error && /(photo_plan|food_plan|cottage_plan)/i.test(res.error.message || '')) {
-                    const { photo_plan, food_plan, cottage_plan, ...rest } = booking
+                  // Older schema without the plan/school_info columns: retry
+                  // without them so the booking itself is never lost.
+                  if (res.error && /(photo_plan|food_plan|cottage_plan|school_info)/i.test(res.error.message || '')) {
+                    const { photo_plan, food_plan, cottage_plan, school_info, ...rest } = booking
                     res = await supabase.from('bookings').insert(rest)
                   }
                 } catch (err) {

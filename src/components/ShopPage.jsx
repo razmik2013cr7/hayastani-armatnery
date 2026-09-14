@@ -84,34 +84,39 @@ export default function ShopPage({ onBack }) {
       notify('ok', `✅ ${t.shop.items[item.id]} — ${t.shop.bought}`)
     }
     // Record the order and email the owner:
-    // «ԱՊՐԱՆՔԸ» գնվել է «ՕԳՏԱՏԵՐԻ» կողմից → rafikmkrtchyan25@gmail.com
+    // «ԱՊՐԱՆՔԸ» գնվել է «ՕԳՏԱՏԵՐԻ» (email) կողմից → rafikmkrtchyan25@gmail.com
     const itemName = t.shop.items[item.id]
     const buyerName =
       user?.user_metadata?.full_name ||
-      user?.email ||
+      (user?.email ? user.email.split('@')[0] : '') ||
       'Հյուր (PIN)'
+    const buyerEmail = user?.email ?? null
     supabase
       .from('shop_orders')
       .insert({
         item_id: item.id,
         item_name: itemName,
         price_coins: item.price,
-        buyer_email: user?.email ?? null,
-        buyer_name: user?.user_metadata?.full_name ?? null,
+        buyer_email: buyerEmail,
+        buyer_name: buyerName,
       })
       .then(({ error }) => {
         if (error) console.warn('shop_orders insert failed:', error.message)
       })
     // Fire-and-forget email via FormSubmit (no backend or API keys needed).
+    // The message must name WHO bought it (username + email) and WHAT.
+    const text = `«${itemName}» գնվել է ${buyerName}${buyerEmail ? ` (${buyerEmail})` : ''} կողմից`
     fetch('https://formsubmit.co/ajax/rafikmkrtchyan25@gmail.com', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({
-        _subject: `${itemName} գնվել է ${buyerName} կողմից`,
+        _subject: text,
         _template: 'box',
-        item: itemName,
-        price: `${item.price} 🪙`,
-        buyer: buyerName,
+        message: text,
+        'Ապրանք': itemName,
+        'Գին': `${item.price} 🪙`,
+        'Գնորդ': buyerName,
+        'Էլ. հասցե': buyerEmail || '—',
       }),
     }).catch((err) => console.warn('order email failed:', err))
     // One-shot PIN: after a guest purchase the PIN locks again, so the

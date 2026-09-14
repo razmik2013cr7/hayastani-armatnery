@@ -33,6 +33,19 @@ export const TOURS = [
   { id: 'georgia', image: '/tour-georgia.svg', price: 26000, days: 7, home: false },
 ]
 
+// Display strings for a tour, honoring the UI language. Built-in tours come
+// from i18n; DB-created tours may carry EN/RU variants (title_en/title_ru…)
+// and their own departure address.
+export function tourInfo(tour, lang, t) {
+  if (!tour.dbId) return t.tours[tour.id]
+  const pick = (base, en, ru) => (lang === 'en' ? en || base : lang === 'ru' ? ru || base : base)
+  return {
+    title: pick(tour.title, tour.titleEn, tour.titleRu),
+    description: pick(tour.description, tour.descriptionEn, tour.descriptionRu) || '',
+    duration: `${tour.days} ${t.checkout.daysWord}`,
+  }
+}
+
 // Step-1 add-ons — each shows its price next to the Yes/No toggle.
 export const EXTRAS = [
   {
@@ -53,7 +66,9 @@ export const EXTRAS = [
   {
     key: 'food',
     icon: '🍽️',
+    // Per-day rate — multiplied by the trip length at checkout.
     price: 8000,
+    perDay: true,
     plansI18n: 'foodPlans',
     plans: [{ id: 'f1' }, { id: 'f2' }],
   },
@@ -104,6 +119,17 @@ export const STAFF_PIN = '2011RLOHN'
 
 // Rewards PIN — unlocks the QR silver-coins page on a device.
 export const REWARD_PIN = '2011'
+
+// Built-in tours: one bus per tour — ids used by the bus-cleaning picker.
+export const BUILTIN_BUS_IDS = ['gyumri', 'dilijan', 'jermuk', 'goris', 'tbilisi', 'sevan', 'syuniq', 'georgia']
+
+// Extra's price for the chosen plan and trip length. Food is a per-day
+// rate (8000 × days), the rest are flat.
+export function extraPrice(extra, planId, days) {
+  const plan = extra.plans?.find((p) => p.id === planId)
+  const base = plan?.price ?? extra.price
+  return extra.perDay ? base * (days || 1) : base
+}
 
 // Price of a tour when booked for a different trip length than its base one,
 // scaled proportionally and rounded to the nearest 100 AMD.

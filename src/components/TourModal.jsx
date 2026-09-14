@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
 import { lockPin, usePinUnlocked } from '../pinAccess.js'
+import { tourInfo } from '../data.js'
 
 const SHOP_SCOPE = 'shop'
 
 const fmt = new Intl.NumberFormat('hy-AM')
 
-export default function TourModal({ tour, onClose, onBuy, t }) {
+export default function TourModal({ tour, onClose, onBuy, lang, t }) {
   const { user } = useAuth()
   const pinUnlocked = usePinUnlocked(SHOP_SCOPE)
   const [authOpen, setAuthOpen] = useState(false)
@@ -25,10 +26,9 @@ export default function TourModal({ tour, onClose, onBuy, t }) {
     }
   }, [onClose])
 
-  // DB-created tours carry their own title/description; built-ins use i18n.
-  const info = tour.title
-    ? { title: tour.title, description: tour.description, duration: `${tour.days} ${t.checkout.daysWord}` }
-    : t.tours[tour.id]
+  // DB-created tours carry their own title/description (with EN/RU variants
+  // when provided); built-ins use i18n.
+  const info = tourInfo(tour, lang, t)
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -48,7 +48,7 @@ export default function TourModal({ tour, onClose, onBuy, t }) {
           <dl className="modal-meta">
             <div className="meta-row">
               <dt>{t.modal.from}</dt>
-              <dd>{t.checkout.departureAddress}</dd>
+              <dd>{tour.dbId && tour.departureAddress ? tour.departureAddress : t.checkout.departureAddress}</dd>
             </div>
             <div className="meta-row">
               <dt>{t.modal.duration}</dt>
