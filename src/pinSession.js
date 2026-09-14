@@ -19,6 +19,32 @@ const STALE_MS = 60000
 
 let started = false
 
+// Release the slot the moment the tab closes or the page is refreshed
+// (beforeunload fires on refresh; pagehide covers mobile backgrounding).
+// Best-effort: the 60s staleness sweep is the reliable fallback.
+if (typeof window !== 'undefined' && !started) {
+  const release = () => {
+    try {
+      // keepalive keeps the request alive through page unload.
+      fetch(
+        `${supabase.supabaseUrl}/rest/v1/pin_sessions?device=eq.${encodeURIComponent(getSessionId())}`,
+        {
+          method: 'DELETE',
+          keepalive: true,
+          headers: {
+            apikey: supabase.supabaseKey,
+            Authorization: `Bearer ${supabase.supabaseKey}`,
+          },
+        }
+      ).catch(() => {})
+    } catch {
+      /* ignore */
+    }
+  }
+  window.addEventListener('pagehide', release)
+  window.addEventListener('beforeunload', release)
+}
+
 function pruneOld(rows) {
   const cutoff = Date.now() - STALE_MS
   return (rows || []).filter((r) => new Date(r.last_seen).getTime() >= cutoff)

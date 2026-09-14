@@ -2255,3 +2255,236 @@ body {
 .admin-tour-item.hidden-tour strong::after {
   content: ' 🚫';
 }
+
+/* ---------- Users counter pill ---------- */
+.pin-counter.users {
+  margin-top: 6px;
+  margin-left: 0;
+}
+
+.pin-counter.users strong {
+  color: var(--ink);
+}
+
+/* ============================================================
+   Responsive — the whole app adapts to any screen size.
+   ============================================================ */
+
+/* ---------- ≤ 900px: tablets ---------- */
+@media (max-width: 900px) {
+  .header-inner {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 14px;
+  }
+
+  .header-spacer {
+    flex: 1;
+  }
+
+  .hero-inner {
+    padding: 34px 16px 40px;
+  }
+
+  .tours-section {
+    padding: 24px 14px 46px;
+  }
+
+  .tour-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+  }
+
+  .admin-entry {
+    flex-wrap: wrap;
+  }
+
+  .admin-entry .admin-btn {
+    font-size: 12.5px;
+    padding: 6px 10px;
+  }
+}
+
+/* ---------- ≤ 640px: large phones ---------- */
+@media (max-width: 640px) {
+  .header-inner {
+    justify-content: space-between;
+  }
+
+  .account-login {
+    font-size: 12.5px;
+    padding: 6px 10px;
+  }
+
+  .site-tabs {
+    padding: 0 12px 8px;
+  }
+
+  .site-tab {
+    padding: 6px 14px;
+    font-size: 0.86rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.3rem, 6vw, 1.7rem);
+  }
+
+  .hero p {
+    font-size: 0.92rem;
+  }
+
+  .tour-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .tour-body {
+    padding: 10px 12px 12px;
+  }
+
+  .tour-title {
+    font-size: 0.95rem;
+  }
+
+  .tour-desc-preview {
+    font-size: 0.82rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .shop-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* Modals become full-screen sheets */
+  .modal-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .modal,
+  .checkout {
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .checkout-body {
+    padding: 16px 14px 90px;
+  }
+
+  .checkout-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .checkout-actions .btn {
+    flex: 1 1 auto;
+  }
+
+  /* Bus seat map scales down */
+  .seat {
+    width: 32px;
+    height: 30px;
+    font-size: 0.6rem;
+  }
+
+  .aisle {
+    width: 10px;
+  }
+
+  .seat-row {
+    gap: 4px;
+  }
+
+  /* Option cards stack */
+  .option-head {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .opt-price.depart-addr {
+    font-size: 0.78rem;
+  }
+
+  .plan-opts {
+    grid-template-columns: 1fr;
+  }
+
+  .total-bar {
+    font-size: 0.95rem;
+  }
+
+  /* Payment method grid */
+  .pay-methods {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Admin forms */
+  .admin-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-image-preview {
+    height: 90px;
+  }
+
+  /* Loyalty stars */
+  .loyalty-stars {
+    gap: 6px;
+  }
+
+  .loyalty-star {
+    font-size: 1.15rem;
+  }
+
+  .loyalty-reward-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- ≤ 400px: small phones ---------- */
+@media (max-width: 400px) {
+  .tour-grid,
+  .shop-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .seat {
+    width: 28px;
+    height: 27px;
+    font-size: 0.55rem;
+  }
+
+  .aisle {
+    width: 6px;
+  }
+
+  .header-inner {
+    padding: 8px 10px;
+  }
+
+  .logo-text {
+    font-size: 0.95rem;
+  }
+}
+
+/* ---------- Short landscape phones ---------- */
+@media (max-height: 480px) and (orientation: landscape) {
+  .modal,
+  .checkout {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  .modal-media img {
+    aspect-ratio: 21 / 6;
+  }
+}

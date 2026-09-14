@@ -1,33 +1,52 @@
 import { useEffect, useState } from 'react'
+import { supabase } from '../supabaseClient.js'
+import { MAX_PIN_DEVICES } from '../pinAccess.js'
 import { countPinDevices } from '../pinSession.js'
 
-// Small pill under the admin buttons: shows how many devices are currently
-// holding the staff PIN (live sessions, out of the 7-device cap).
+// Two pills under the admin buttons:
+//   • how many devices currently hold the staff PIN (live sessions, /7)
+//   • how many users have signed up in the database (profiles table)
 export default function PinCounter({ t }) {
-  const [state, setState] = useState({ count: null, max: 7 })
+  const [pin, setPin] = useState({ count: null, max: MAX_PIN_DEVICES })
+  const [users, setUsers] = useState(null)
 
   useEffect(() => {
     let alive = true
-    const load = async () => {
+    const loadPin = async () => {
       const { count, max } = await countPinDevices()
-      if (alive) setState({ count, max })
+      if (alive) setPin({ count, max })
     }
-    load()
-    const timer = setInterval(load, 15000)
-    window.addEventListener('pincount', load)
+    const loadUsers = async () => {
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+      if (alive && !error) setUsers(count ?? 0)
+    }
+    loadPin()
+    loadUsers()
+    const timer = setInterval(loadPin, 15000)
+    window.addEventListener('pincount', loadPin)
     return () => {
       alive = false
       clearInterval(timer)
-      window.removeEventListener('pincount', load)
+      window.removeEventListener('pincount', loadPin)
     }
   }, [])
 
   return (
-    <div className="pin-counter" title={t.checkout.pinBusyTitle}>
-      <span className={`pin-counter-dot${state.count >= state.max ? ' full' : ''}`} aria-hidden="true" />
-      <span>
-        {t.checkout.pinActiveDevices}: <strong>{state.count === null ? '…' : state.count}</strong> / {state.max}
-      </span>
-    </div>
+    <>
+      <div className="pin-counter" title={t.checkout.pinBusyTitle}>
+        <span className={`pin-counter-dot${pin.count >= pin.max ? ' full' : ''}`} aria-hidden="true" />
+        <span>
+          {t.checkout.pinActiveDevices}: <strong>{pin.count === null ? '…' : pin.count}</strong> / {pin.max}
+        </span>
+      </div>
+      <div className="pin-counter users" title={t.checkout.pinUsersTitle}>
+        <span aria-hidden="true">👤</span>
+        <span>
+          {t.checkout.pinUsers}: <strong>{users === null ? '…' : users}</strong>
+        </span>
+      </div>
+    </>
   )
 }

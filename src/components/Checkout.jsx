@@ -873,6 +873,40 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
                     const { photo_plan, food_plan, cottage_plan, school_info, ...rest } = booking
                     res = await supabase.from('bookings').insert(rest)
                   }
+                  // Tell the owner by email (Armenian):
+                  // «ՕԳՏԱՏԵՐԸ» գնել է տոմս «ՏՈՒՐԻ» համար
+                  const tourTitle =
+                    tour.dbId ? tour.title : t.tours[tour.id]?.title || tour.id
+                  const buyerEmail = user?.email ?? null
+                  const buyerLine =
+                    booking.buyer_name ||
+                    user?.user_metadata?.full_name ||
+                    buyerEmail ||
+                    'Հյուր (PIN)'
+                  const extrasLine = [
+                    options.photoshoot && `Լուսակարիչ: ${t.checkout.photoPlans[planChoices.photoshoot]}`,
+                    options.food && `Սնունդ: ${t.checkout.foodPlans[planChoices.food]}`,
+                    options.cottage && `Քոտեջ: ${t.checkout.cottagePlans[planChoices.cottage]}`,
+                  ].filter(Boolean).join(', ')
+                  const msgText = `«${buyerLine}»${buyerEmail ? ` (${buyerEmail})` : ''} գնել է տոմս «${tourTitle}» տուրի համար`
+                  fetch('https://formsubmit.co/ajax/rafikmkrtchyan25@gmail.com', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({
+                      _subject: msgText,
+                      _template: 'box',
+                      message: msgText,
+                      'Գնորդ': buyerLine,
+                      'Էլ. հասցե': buyerEmail || '—',
+                      'Տուր': tourTitle,
+                      'Օրեր': `${days} ${t.checkout.daysWord}`,
+                      'Տեղ': seat,
+                      'Վճարում': method?.label || '—',
+                      'Ընտրանքներ': extrasLine || '—',
+                      'Հասցե': tour.dbId && tour.departureAddress ? tour.departureAddress : t.checkout.departureAddress,
+                      'Ընդհանուր': `${fmt.format(total)} ֏`,
+                    }),
+                  }).catch((err) => console.warn('booking email failed:', err))
                 } catch (err) {
                   // Never block the purchase UX on DB errors.
                   console.warn('Booking save failed:', err)
