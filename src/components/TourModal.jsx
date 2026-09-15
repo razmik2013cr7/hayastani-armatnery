@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
-import { lockPin, usePinUnlocked } from '../pinAccess.js'
-import { tourInfo } from '../data.js'
+import { usePinUnlocked } from '../pinAccess.js'
+import { applyDiscount, tourInfo } from '../data.js'
 
 const SHOP_SCOPE = 'shop'
 
@@ -10,11 +10,10 @@ const fmt = new Intl.NumberFormat('hy-AM')
 
 export default function TourModal({ tour, onClose, onBuy, lang, t }) {
   const { user } = useAuth()
+  // Access is decided once, site-wide (login or PIN) — opening/closing the
+  // tour modal never re-asks for the PIN.
   const pinUnlocked = usePinUnlocked(SHOP_SCOPE)
   const [authOpen, setAuthOpen] = useState(false)
-  // The PIN unlock is one-shot: it lasts only until this modal closes —
-  // unless we're handing off to the checkout (a purchase is in progress).
-  const buyingRef = useRef(false)
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
@@ -22,7 +21,6 @@ export default function TourModal({ tour, onClose, onBuy, lang, t }) {
     return () => {
       window.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
-      if (!buyingRef.current) lockPin(SHOP_SCOPE)
     }
   }, [onClose])
 
@@ -58,14 +56,20 @@ export default function TourModal({ tour, onClose, onBuy, lang, t }) {
 
           <div className="modal-foot">
             <span className="modal-price">
-              {fmt.format(tour.price)} ֏
+              {tour.discount ? (
+                <>
+                  <span className="price-was">{fmt.format(tour.oldPrice)} ֏</span>
+                  <span className="price-now">{fmt.format(applyDiscount(tour.oldPrice, tour.discount))} ֏</span>
+                </>
+              ) : (
+                `${fmt.format(tour.price)} ֏`
+              )}
             </span>
             <button
               type="button"
               className="btn btn-primary"
               onClick={() => {
                 if (user || pinUnlocked) {
-                  buyingRef.current = true
                   onBuy()
                 } else {
                   setAuthOpen(true)

@@ -131,6 +131,13 @@ export function extraPrice(extra, planId) {
   return plan?.price ?? extra.price
 }
 
+// Applies a percent discount (0–100) to a price, rounded to the nearest
+// 100 AMD. discount=0 → the price unchanged.
+export function applyDiscount(price, discount) {
+  if (!discount) return price
+  return Math.round((price * (100 - discount)) / 100 / 100) * 100
+}
+
 // Price of a tour when booked for a different trip length than its base one,
 // scaled proportionally and rounded to the nearest 100 AMD.
 export function tourPriceForDays(tour, days) {

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { SHOP_ITEMS } from '../data.js'
 import { useAuth } from '../AuthContext.jsx'
 import AuthModal from './AuthModal.jsx'
-import { getGuestCoins, lockPin, setGuestCoins, usePinUnlocked } from '../pinAccess.js'
+import { getGuestCoins, setGuestCoins, usePinUnlocked } from '../pinAccess.js'
 
 const SHOP_SCOPE = 'shop'
 import NavTabs from './NavTabs.jsx'
@@ -119,9 +119,8 @@ export default function ShopPage({ onBack }) {
         'Էլ. հասցե': buyerEmail || '—',
       }),
     }).catch((err) => console.warn('order email failed:', err))
-    // One-shot PIN: after a guest purchase the PIN locks again, so the
-    // next purchase asks for it once more.
-    if (!user) lockPin(SHOP_SCOPE)
+    // The PIN stays unlocked for the whole page session once entered
+    // (site-wide gate) — no re-lock after each purchase.
     setBusyId(null)
   }
 

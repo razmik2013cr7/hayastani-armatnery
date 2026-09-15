@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { TOURS, tourInfo } from '../data.js'
+import { TOURS, tourInfo, applyDiscount } from '../data.js'
 import { useAuth } from '../AuthContext.jsx'
 
 const fmt = new Intl.NumberFormat('hy-AM')
@@ -11,6 +11,7 @@ const fmt = new Intl.NumberFormat('hy-AM')
 function useAllTours(supabase) {
   const [extra, setExtra] = useState([])
   const [hidden, setHidden] = useState(new Set())
+  const [discounts, setDiscounts] = useState({}) // { [tourId]: discountPct }
   useEffect(() => {
     let alive = true
     supabase
@@ -18,6 +19,15 @@ function useAllTours(supabase) {
       .select('*')
       .then(({ data }) => {
         if (alive && Array.isArray(data)) setExtra(data)
+      })
+    // Owner-set discounts (percent off). Not applied to card tours.
+    supabase
+      .from('tour_discounts')
+      .select('tour_id, discount')
+      .then(({ data }) => {
+        if (alive && Array.isArray(data)) {
+          setDiscounts(Object.fromEntries(data.map((r) => [r.tour_id, r.discount])))
+        }
       })
     supabase
       .from('hidden_tours')
@@ -48,8 +58,15 @@ function useAllTours(supabase) {
         descriptionRu: row.description_ru,
         departureAddress: row.departure_address,
       }))
-    return [...TOURS.filter((b) => !hidden.has(b.id)), ...custom]
-  }, [extra, hidden])
+    const list = [...TOURS.filter((b) => !hidden.has(b.id)), ...custom]
+    return list.map((tour) => {
+      const key = tour.dbId || tour.id
+      const discount = discounts[key]
+      return discount
+        ? { ...tour, discount, oldPrice: tour.price, price: applyDiscount(tour.price, discount) }
+        : tour
+    })
+  }, [extra, hidden, discounts])
 }
 
 function Group({ tours, title, onOpen, lang, t }) {
@@ -70,13 +87,21 @@ function Group({ tours, title, onOpen, lang, t }) {
                 <span className="seats-badge">
                   📅 {info.duration}
                 </span>
+                {tour.discount ? <span className="sale-badge">−{tour.discount}%</span> : null}
               </div>
               <div className="tour-body">
                 <h3 className="tour-title">{info.title}</h3>
                 <p className="tour-desc-preview">{info.description}</p>
                 <div className="tour-foot">
                   <span className="tour-price">
-                    {fmt.format(tour.price)} ֏
+                    {tour.discount ? (
+                      <>
+                        <span className="price-was">{fmt.format(tour.oldPrice)} ֏</span>
+                        <span className="price-now">{fmt.format(tour.price)} ֏</span>
+                      </>
+                    ) : (
+                      `${fmt.format(tour.price)} ֏`
+                    )}
                   </span>
                   <span className="details-link">{t.card.details} →</span>
                 </div>

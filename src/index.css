@@ -2488,3 +2488,46 @@ body {
     aspect-ratio: 21 / 6;
   }
 }
+
+/* ===================== Site-wide gate screen ===================== */
+.gate-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  text-align: center;
+  padding: 24px;
+}
+.gate-brand { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.gate-brand .logo-img { width: 84px; height: 84px; border-radius: 20px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+.gate-brand h1 { margin: 0; font-size: clamp(1.5rem, 4vw, 2.2rem); }
+.gate-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+/* ===================== Discounts ===================== */
+.sale-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  background: linear-gradient(135deg, #e03131, #c92a2a);
+  color: #fff;
+  font-weight: 800;
+  font-size: .78rem;
+  padding: 3px 9px;
+  border-radius: 999px;
+  box-shadow: 0 3px 10px rgba(224, 49, 49, .4);
+}
+.price-was {
+  text-decoration: line-through;
+  opacity: .55;
+  font-size: .85em;
+  margin-right: 6px;
+}
+.price-now { color: #e03131; font-weight: 800; }
+.modal-price .price-now { font-size: 1.1em; }
+
+.discount-editor { padding: 4px 0 0; }
+.discount-editor .checkout-actions { margin-top: 8px; }
+

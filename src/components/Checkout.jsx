@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { BUS_SEAT_ROWS, CATEGORIES, EXTRAS, PAYMENT_METHODS, STAFF_PIN, TAKEN_SEATS, extraPrice, tourPriceForDays } from '../data.js'
+import { BUS_SEAT_ROWS, CATEGORIES, EXTRAS, PAYMENT_METHODS, STAFF_PIN, TAKEN_SEATS, applyDiscount, extraPrice, tourPriceForDays } from '../data.js'
 import { useAuth } from '../AuthContext.jsx'
-import AuthModal from './AuthModal.jsx'
-import { lockPin, usePinUnlocked } from '../pinAccess.js'
+import { usePinUnlocked } from '../pinAccess.js'
 
 const SHOP_SCOPE = 'shop'
 import ticketLogo from '../assets/ticket-logo.jpeg'
@@ -132,7 +131,7 @@ function StepOptions({ tour, options, setOptions, planChoices, setPlanChoices, t
           <div className="dep-label">{t.checkout.chooseDays}</div>
           <div className="days-picker">
             {CATEGORIES.filter((c) => c.days).map((c) => {
-              const price = tourPriceForDays(tour, c.days)
+              const price = applyDiscount(tourPriceForDays(tour, c.days), tour.discount)
               return (
                 <button
                   key={c.id}
@@ -703,11 +702,9 @@ function Success({ tour, days, options, planChoices, seat, card, method, school,
 
 export default function Checkout({ tour, categoryDays = null, onClose, t }) {
   const { user, supabase } = useAuth()
+  // Access is decided once, site-wide (login or PIN) — the checkout itself
+  // never re-asks for the PIN.
   const pinUnlocked = usePinUnlocked(SHOP_SCOPE)
-  const [authOpen, setAuthOpen] = useState(false)
-  // The PIN unlock is one-shot: closing the checkout (after buying or not)
-  // always re-locks it, so the next purchase asks for the PIN again.
-  useEffect(() => () => lockPin(SHOP_SCOPE), [])
   const [step, setStep] = useState(1)
   const [options, setOptions] = useState({ photoshoot: false, food: false, cottage: false })
   // Which package was chosen inside each extra's menu (photoshoot plans,
@@ -733,10 +730,11 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
   const [days, setDays] = useState(tour.days)
   const needsDayChoice = categoryDays == null
 
-  // Whole-tour price = base price for the chosen length + extras.
-  // Food's chosen day-package multiplies the 8000 AMD daily rate.
+  // Whole-tour price = (discounted) base price for the chosen length + extras.
+  // Food's chosen day-package multiplies the 8000 AMD daily rate. The
+  // owner-set percent discount applies to the tour price only.
   const total = useMemo(() => {
-    let sum = tourPriceForDays(tour, days)
+    let sum = applyDiscount(tourPriceForDays(tour, days), tour.discount)
     for (const ex of EXTRAS) {
       if (!options[ex.key]) continue
       sum += extraPrice(ex, planChoices[ex.key])
@@ -746,31 +744,9 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
 
   const steps = [t.checkout.step1, t.checkout.step2, t.checkout.step3]
 
-  // Buying requires an account or the staff PIN — no steps are reachable otherwise.
-  if (!user && !pinUnlocked) {
-    return (
-      <div className="checkout-overlay" onClick={onClose}>
-        <div className="checkout" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-          <button type="button" className="modal-close" aria-label={t.modal.close} onClick={onClose}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
-          </button>
-          <div className="checkout-body">
-            <div className="gate-box">
-              <div className="gate-icon" aria-hidden="true">🔐</div>
-              <h3>{t.checkout.needAccountTitle}</h3>
-              <p className="t-sub">{t.checkout.needAccountText}</p>
-              <button type="button" className="btn btn-primary" onClick={() => setAuthOpen(true)}>
-                👤 {t.auth.signIn}
-              </button>
-            </div>
-            {authOpen && <AuthModal t={t} onClose={() => setAuthOpen(false)} />}
-          </div>
-        </div>
-      </div>
-    )
-  }
+  // Safety net: the site-wide gate guarantees an account or an unlocked PIN
+  // before this point, so the purchase steps always render. (The gate itself
+  // lives in App/Shop/Silver pages.)
 
   return (
     <div className="checkout-overlay" onClick={onClose}>
@@ -921,6 +897,7 @@ export default function Checkout({ tour, categoryDays = null, onClose, t }) {
                       'Տեղ': seat,
                       'Վճարում': method?.label || '—',
                       'Ընտրանքներ': extrasLine || '—',
+                      'Զեղջ': tour.discount ? `${tour.discount}%` : '—',
                       'Հասցե': tour.dbId && tour.departureAddress ? tour.departureAddress : t.checkout.departureAddress,
                       'Ընդհանուր': `${fmt.format(total)} ֏`,
                     }),

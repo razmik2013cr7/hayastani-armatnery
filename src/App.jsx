@@ -12,13 +12,53 @@ import ShopPage from './components/ShopPage.jsx'
 import QrClaimListener from './components/QrClaimListener.jsx'
 import { AdminEntry } from './components/AdminPanel.jsx'
 import PinCounter from './components/PinCounter.jsx'
+import AuthModal from './components/AuthModal.jsx'
 import { CATEGORIES, SITE_URL } from './data.js'
-import { getQrSessionId } from './pinAccess.js'
-import { AuthProvider } from './AuthContext.jsx'
+import { getQrSessionId, usePinUnlocked } from './pinAccess.js'
+import { AuthProvider, useAuth } from './AuthContext.jsx'
 import { translations } from './i18n.js'
 import mainLogo from './assets/main-logo.jpeg'
 
+const SHOP_SCOPE = 'shop'
+
+// Site-wide gate: until the visitor signs in OR unlocks the staff PIN,
+// nothing but this screen renders. The PIN stays unlocked for the whole
+// page session (until the tab is closed or refreshed) and each unlocked
+// device counts toward the 7-device limit.
+function GateScreen({ t }) {
+  const [authOpen, setAuthOpen] = useState(true)
+  return (
+    <div className="gate-screen">
+      <div className="gate-brand">
+        <img className="logo-img" src={mainLogo} alt="" />
+        <h1>Հավերժական Հայրենիք</h1>
+        <p className="t-sub">{t.gate.subtitle}</p>
+      </div>
+      <div className="gate-actions">
+        <button type="button" className="btn btn-primary" onClick={() => setAuthOpen(true)}>
+          👤 {t.auth.signIn}
+        </button>
+        <button type="button" className="btn btn-ghost" onClick={() => setAuthOpen(true)}>
+          🔐 {t.auth.usePinInstead}
+        </button>
+      </div>
+      {authOpen && <AuthModal t={t} onClose={() => setAuthOpen(false)} />}
+    </div>
+  )
+}
+
 export default function App() {
+  return (
+    <AuthProvider>
+      <Site />
+    </AuthProvider>
+  )
+}
+
+function Site() {
+  const { user, loading } = useAuth()
+  const pinUnlocked = usePinUnlocked(SHOP_SCOPE)
+  const gated = !loading && !user && !pinUnlocked
   const [lang, setLang] = useState('hy')
   // Day categories only (3/5/7) — the “all” option was removed.
   const [category, setCategory] = useState('3')
@@ -68,19 +108,19 @@ export default function App() {
     return copy[lang]
   }, [lang])
 
+  if (gated) {
+    return <GateScreen t={t} />
+  }
+
   if (route === '#/silver' || route.startsWith('#/silver?')) {
     return (
-      <AuthProvider>
-        <SilverPage onBack={() => { window.location.hash = ''; setRoute('') }} />
-      </AuthProvider>
+      <SilverPage onBack={() => { window.location.hash = ''; setRoute('') }} />
     )
   }
 
   if (route === '#/shop' || route.startsWith('#/shop?')) {
     return (
-      <AuthProvider>
-        <ShopPage onBack={() => { window.location.hash = ''; setRoute('') }} />
-      </AuthProvider>
+      <ShopPage onBack={() => { window.location.hash = ''; setRoute('') }} />
     )
   }
 
@@ -88,7 +128,7 @@ export default function App() {
   const days = CATEGORIES.find((c) => c.id === category)?.days ?? null
 
   return (
-    <AuthProvider>
+    <>
       <Header lang={lang} onLangChange={setLang} t={t} />
       <NavTabs t={t} />
       <TourNav active={category} onChange={setCategory} t={t} />
@@ -155,6 +195,6 @@ export default function App() {
       )}
 
       {loyaltyOpen && <LoyaltyCard t={t} onClose={() => setLoyaltyOpen(false)} />}
-    </AuthProvider>
+    </>
   )
 }

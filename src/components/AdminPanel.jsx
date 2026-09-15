@@ -5,11 +5,13 @@ import BusSeats from './BusSeats.jsx'
 
 const fmt = new Intl.NumberFormat('hy-AM')
 
-// Admin panel — add / edit / delete tours, clean bus(es), manage card tours.
-// The staff PIN (2011RLOHN) is required for EVERY action: it arms one action
-// only and re-locks as soon as the action completes, so the next action asks
-// for the PIN again. Tours live in public.tours; card tours in
-// public.card_tours (same schema, separate list) — see supabase-migration.sql.
+// Admin panel — add / edit / delete tours, set discounts, clean bus(es),
+// manage card tours. The staff PIN (2011RLOHN) is required for EVERY admin
+// action: it arms one action only and re-locks as soon as the action
+// completes, so the next action asks for the PIN again. Tours live in
+// public.tours; card tours in public.card_tours (same schema, separate
+// list); discounts in public.tour_discounts — see supabase-migration.sql.
+// Discounts apply to REGULAR tours only — never to card tours.
 const TABLES = { tour: 'tours', card: 'card_tours' }
 
 function PinGate({ t, onSubmit }) {
@@ -99,6 +101,31 @@ const EMPTY_FORM = {
   title: '', titleEn: '', titleRu: '',
   description: '', descriptionEn: '', descriptionRu: '',
   departureAddress: '', region: 'home', days: '3', price: '', imageUrl: '',
+}
+
+function DiscountEditor({ value, setValue, busy, onSave, onRemove, t }) {
+  return (
+    <div className="discount-editor">
+      <label className="field">
+        <span>{t.admin.discount}</span>
+        <input
+          inputMode="numeric"
+          value={value}
+          onChange={(e) => setValue(e.target.value.replace(/\D/g, '').slice(0, 2))}
+          placeholder="0"
+        />
+      </label>
+      <p className="t-sub">{t.admin.discountNote}</p>
+      <div className="checkout-actions">
+        <button type="button" className="btn btn-ghost" disabled={busy} onClick={onRemove}>
+          ✕ {t.admin.discountRemove}
+        </button>
+        <button type="button" className="btn btn-primary" disabled={busy} onClick={onSave}>
+          🏷 {t.admin.discountSet}
+        </button>
+      </div>
+    </div>
+  )
 }
 
 function formFromRow(row) {
@@ -211,7 +238,7 @@ function TourForm({ initial, editing, cardMode, saving, onSave, onCancel, t }) {
   )
 }
 
-function TourList({ heading, sub, tours, picked, onPick, t, actions }) {
+function TourList({ heading, sub, tours, picked, onPick, t, actions, discounts }) {
   return (
     <div className="admin-form">
       <h3>{heading}</h3>
@@ -231,6 +258,7 @@ function TourList({ heading, sub, tours, picked, onPick, t, actions }) {
                   <em>
                     {row.region === 'abroad' ? t.admin.abroad : t.admin.home} · {row.days} {t.checkout.daysWord}
                     {!row.builtin && row.price != null && ` · ${fmt.format(Number(row.price) || 0)} ֏`}
+                    {discounts && discounts[row.id] != null && ` · 🏷 −${discounts[row.id]}%`}
                     {row.hidden && ` · ${t.admin.hiddenTag}`}
                   </em>
                 </span>
@@ -246,17 +274,20 @@ function TourList({ heading, sub, tours, picked, onPick, t, actions }) {
 
 export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
   const { supabase } = useAuth()
-  const [mode, setMode] = useState('pin') // 'pin' | 'add' | 'edit' | 'delete' | 'bus' | 'addCard' | 'delCard'
+  const [mode, setMode] = useState('pin') // 'pin' | 'add' | 'edit' | 'delete' | 'bus' | 'addCard' | 'delCard' | 'discount'
   const [unlocked, setUnlocked] = useState(false)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState(null) // { kind: 'ok' | 'err', text }
   const [tours, setTours] = useState(null) // rows of the active table
   const [hidden, setHidden] = useState(new Set()) // hidden builtin ids
+  const [discounts, setDiscounts] = useState({}) // { [tourId]: pct } — regular tours only
+  const [discVal, setDiscVal] = useState('') // discount input for the picked tour
   const [picked, setPicked] = useState(null) // id picked for edit/delete
   const [formOpen, setFormOpen] = useState(false) // edit mode: form shown?
   const [busTour, setBusTour] = useState('') // '' = every bus
 
   const isCard = ['addCard', 'delCard'].includes(initialMode)
+  const isDiscount = initialMode === 'discount'
 
   // Build the list shown in delete/edit pickers: DB rows + builtin tours
   // (marked, still listed even when hidden so they can be restored).
@@ -284,16 +315,21 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
     return list
   }
 
-  // DB rows + the hidden-builtin set for the active kind (regular/card).
+  // DB rows + the hidden-builtin set for the active kind (regular/card),
+  // plus the discount map for regular tours.
   const loadAll = async () => {
     setTours(null)
     const table = isCard ? TABLES.card : TABLES.tour
-    const [{ data: rows, error }, { data: hiddenRows }] = await Promise.all([
+    const [{ data: rows, error }, { data: hiddenRows }, { data: discRows }] = await Promise.all([
       supabase.from(table).select('*').order('created_at', { ascending: false }),
       supabase.from('hidden_tours').select('tour_id').eq('kind', isCard ? 'card' : 'tour'),
+      isDiscount
+        ? supabase.from('tour_discounts').select('tour_id, discount').eq('kind', 'tour')
+        : Promise.resolve({ data: [] }),
     ])
     if (error) notify('err', error.message)
     setHidden(new Set((hiddenRows || []).map((r) => r.tour_id)))
+    setDiscounts(Object.fromEntries((discRows || []).map((r) => [r.tour_id, r.discount])))
     setTours(buildList(rows || [], new Set((hiddenRows || []).map((r) => r.tour_id))))
   }
 
@@ -305,6 +341,7 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
     setPicked(null)
     setTours(null)
     setFormOpen(false)
+    setDiscVal('')
   }
 
   const notify = (kind, text) => {
@@ -331,7 +368,7 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
     if (pin !== STAFF_PIN) return false
     setUnlocked(true)
     setMode(initialMode)
-    if (['edit', 'delete', 'delCard'].includes(initialMode)) loadAll()
+    if (['edit', 'delete', 'delCard', 'discount'].includes(initialMode)) loadAll()
     return true
   }
 
@@ -437,6 +474,43 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
     wantMode()
   }
 
+  // Set (or update) the picked tour's percent discount. Regular tours only.
+  const saveDiscount = async () => {
+    const pct = Number(discVal)
+    if (!picked || !pct || pct < 1 || pct > 99) return
+    setBusy(true)
+    const { error } = await supabase
+      .from('tour_discounts')
+      .upsert({ kind: 'tour', tour_id: picked, discount: pct }, { onConflict: 'kind,tour_id' })
+    setBusy(false)
+    if (error) {
+      notify('err', error.message || t.admin.failed)
+      return
+    }
+    notify('ok', `🏷 ${t.admin.discountSet}: −${pct}%`)
+    wantMode()
+    if (onSaved) onSaved()
+  }
+
+  // Remove the picked tour's discount (back to full price).
+  const removeDiscount = async () => {
+    if (!picked) return
+    setBusy(true)
+    const { error } = await supabase
+      .from('tour_discounts')
+      .delete()
+      .eq('kind', 'tour')
+      .eq('tour_id', picked)
+    setBusy(false)
+    if (error) {
+      notify('err', error.message || t.admin.failed)
+      return
+    }
+    notify('ok', `✅ ${t.admin.discountRemoved}`)
+    wantMode()
+    if (onSaved) onSaved()
+  }
+
   const formInitial = mode === 'edit' && picked ? formFromRow((tours || []).find((r) => r.id === picked)) : EMPTY_FORM
   const editReady = mode === 'edit' && picked && formOpen
 
@@ -513,6 +587,40 @@ export default function AdminPanel({ t, initialMode, onClose, onSaved }) {
                 </div>
               }
             />
+          ) : mode === 'discount' ? (
+            tours === null ? (
+              <p>…</p>
+            ) : (
+              <>
+                <TourList
+                  heading={`🏷 ${t.admin.discountTour}`}
+                  sub={t.admin.discountPick}
+                  tours={tours}
+                  picked={picked}
+                  onPick={(id) => {
+                    setPicked(id)
+                    setDiscVal(discounts[id] != null ? String(discounts[id]) : '')
+                  }}
+                  t={t}
+                  discounts={isDiscount ? discounts : undefined}
+                />
+                {picked && (
+                  <DiscountEditor
+                    value={discVal}
+                    setValue={setDiscVal}
+                    busy={busy}
+                    onSave={saveDiscount}
+                    onRemove={removeDiscount}
+                    t={t}
+                  />
+                )}
+                {!picked && (
+                  <div className="checkout-actions">
+                    <button type="button" className="btn btn-ghost" onClick={onClose}>{t.admin.cancel}</button>
+                  </div>
+                )}
+              </>
+            )
           ) : (
             <div className="admin-form">
               <h3>🚌 {t.admin.cleanBus}</h3>
@@ -569,6 +677,9 @@ export function AdminEntry({ t, onSaved }) {
       </button>
       <button type="button" className="btn btn-ghost admin-btn" onClick={() => setOpen('bus')}>
         🚌 {t.admin.cleanBus}
+      </button>
+      <button type="button" className="btn btn-ghost admin-btn" onClick={() => setOpen('discount')}>
+        🏷 {t.admin.discountTour}
       </button>
       {open && (
         <AdminPanel t={t} initialMode={open} onClose={() => setOpen(null)} onSaved={onSaved} />
